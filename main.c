@@ -27,6 +27,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "eeprom.h"
 
 /** @addtogroup STM32F30x_StdPeriph_Examples
   * @{
@@ -46,6 +47,14 @@
 CanTxMsg TxMessage = {0};
 uint8_t KeyNumber = 0x0;
 
+/* Values of Variable1, Variable2 and Variable3 */
+uint16_t VarValue1, VarValue2, VarValue3;
+
+/* Virtual address defined by the user: 0xFFFF value is prohibited */
+uint16_t VirtAddVarTab[NB_OF_VAR] = {0x5555, 0x6666, 0x7777};
+uint16_t VarDataTab[NB_OF_VAR] = {0, 0, 0};
+
+
 /* Private function prototypes -----------------------------------------------*/
 static void CAN_Config(void);
 void Delay(void);
@@ -63,7 +72,40 @@ int main(void)
        file (startup_stm32f30x.s) before to branch to application main.
        To reconfigure the default setting of SystemInit() function, refer to
        system_stm32f30x.c file
-     */     
+     */
+  /* Test Virtual EEPROM */ 
+#if 1  
+  uint16_t varvalue = 0;
+  
+  /* Unlock the Flash Program Erase controller */
+  FLASH_Unlock();
+
+  /* EEPROM Init */
+  EE_Init();
+  
+  /* Initialize variables to be used */
+  VarValue1 = 0;
+  VarValue2 = 0;
+  VarValue3 = 0; 
+  
+  /* Store successively many values of the three variables in the EEPROM */
+  /* Store 100 values of Variable1, Variable2 and Variable3 in EEPROM */
+  for (varvalue = 0; varvalue < 100; varvalue++)
+  {
+    VarValue1 += 1;
+    VarValue2 += 2;
+    VarValue3 += 3;
+             
+    EE_WriteVariable(VirtAddVarTab[0], VarValue1);
+    EE_WriteVariable(VirtAddVarTab[1], VarValue2);
+    EE_WriteVariable(VirtAddVarTab[2], VarValue3);
+  }
+  /* read the last stored variables data*/
+  EE_ReadVariable(VirtAddVarTab[0], &VarDataTab[0]);
+  EE_ReadVariable(VirtAddVarTab[1], &VarDataTab[1]);
+  EE_ReadVariable(VirtAddVarTab[2], &VarDataTab[2]);
+  
+#endif
        
   /* Configures LED 1..4 */
   STM_EVAL_LEDInit(LED1);
