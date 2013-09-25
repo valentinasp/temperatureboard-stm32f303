@@ -614,6 +614,18 @@ static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data)
   return FlashStatus;
 }
 
+
+
+
+uint16_t EE_Write_Buff(uint16_t VirtAddress,unsigned char *Buffer, uint32_t DataLength)
+{
+
+}
+
+uint16_t EE_Read_Buff (uint16_t VirtAddress,unsigned char *Buffer, uint32_t DataLength){
+  
+}
+
 /**
   * @}
   */ 
