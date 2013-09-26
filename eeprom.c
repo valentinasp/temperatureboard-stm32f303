@@ -619,11 +619,30 @@ static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data)
 
 uint16_t EE_Write_Buff(uint16_t VirtAddress,unsigned char *Buffer, uint32_t DataLength)
 {
-
+  uint32_t idx = 0;
+  uint16_t Status = 0;
+  
+  /* Data received are Word multiple */
+  for (idx = 0; idx <  DataLength; idx = idx + 2)
+  {
+    Status = EE_WriteVariable(VirtAddress, *(uint16_t *)(Buffer+idx));
+    if(Status!=FLASH_COMPLETE) break;
+    VirtAddress++;
+  }
+   return Status;
 }
 
 uint16_t EE_Read_Buff (uint16_t VirtAddress,unsigned char *Buffer, uint32_t DataLength){
-  
+  uint16_t Status = 1;
+
+  for (uint32_t idx = 0; idx <  DataLength; idx = idx+2)
+  {
+    Status = EE_ReadVariable(VirtAddress,(uint16_t *)(Buffer+idx));
+    if(Status) break;
+    VirtAddress++;
+  }
+  /* Return ReadStatus value: (0: variable exist, 1: variable doesn't exist) */
+  return Status;
 }
 
 /**

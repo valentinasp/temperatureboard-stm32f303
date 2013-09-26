@@ -1938,6 +1938,9 @@
   <group>
     <name>User</name>
     <file>
+      <name>$PROJ_DIR$\..\calibration.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\eeprom.c</name>
     </file>
     <file>
