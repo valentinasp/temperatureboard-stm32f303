@@ -76,13 +76,15 @@ int main(void)
   /* Test Virtual EEPROM */ 
 #if 1  
   uint16_t varvalue = 0;
+  unsigned char SendBuffer[10];
+  unsigned char ResiveBuffer[10];
   
   /* Unlock the Flash Program Erase controller */
   FLASH_Unlock();
 
   /* EEPROM Init */
   EE_Init();
-  
+#if 0   
   /* Initialize variables to be used */
   VarValue1 = 0;
   VarValue2 = 0;
@@ -104,6 +106,15 @@ int main(void)
   EE_ReadVariable(VirtAddVarTab[0], &VarDataTab[0]);
   EE_ReadVariable(VirtAddVarTab[1], &VarDataTab[1]);
   EE_ReadVariable(VirtAddVarTab[2], &VarDataTab[2]);
+#endif  
+  SendBuffer[0] = 0x14;
+  SendBuffer[1] = 0x25;
+  SendBuffer[2] = 0x06;
+  SendBuffer[3] = 0x07;
+  SendBuffer[4] = 0x08;
+  
+  EE_Write_Buff(VirtAddVarTab[0],SendBuffer,5);  
+  EE_Read_Buff(VirtAddVarTab[0],ResiveBuffer,5);
   
 #endif
        

@@ -11,7 +11,7 @@ ByteLimit=50
 [JLinkDriver]
 CStepIntDis=_ 0
 [DebugChecksum]
-Checksum=422223132
+Checksum=-212182531
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -19,6 +19,30 @@ StopOnThrow=_ 0
 ShowArgs=0
 [Disassembly]
 MixedMode=1
+[SWOTraceHWSettings]
+OverrideDefaultClocks=0
+CpuClock=72000000
+ClockAutoDetect=1
+ClockWanted=2000000
+JtagSpeed=2000000
+Prescaler=36
+TimeStampPrescIndex=0
+TimeStampPrescData=0
+PcSampCYCTAP=1
+PcSampPOSTCNT=15
+PcSampIndex=0
+DataLogMode=0
+ITMportsEnable=0
+ITMportsTermIO=0
+ITMportsLogFile=0
+ITMlogFile=$PROJ_DIR$\ITM.log
+[watch_formats]
+Fmt0={W}0:*((uint16_t *)Buffer)+2	4	0
+Fmt1={W}0:*((uint16_t *)Buffer+2)	4	0
+Fmt2={W}0:*(uint16_t *)(Buffer+2)	4	0
+Fmt3={W}0:*(uint16_t *)Buffer	4	0
+Fmt4={W}0:*(uint16_t *)Buffer+2	4	0
+Fmt5={W}0:VirtAddress	4	0
 [DataLog]
 LogEnabled=0
 SumEnabled=0
@@ -51,23 +75,6 @@ EventEXC=0
 EventFOLD=0
 EventLSU=0
 EventSLEEP=0
-[SWOTraceHWSettings]
-OverrideDefaultClocks=0
-CpuClock=72000000
-ClockAutoDetect=1
-ClockWanted=2000000
-JtagSpeed=2000000
-Prescaler=36
-TimeStampPrescIndex=0
-TimeStampPrescData=0
-PcSampCYCTAP=1
-PcSampPOSTCNT=15
-PcSampIndex=0
-DataLogMode=0
-ITMportsEnable=0
-ITMportsTermIO=0
-ITMportsLogFile=0
-ITMlogFile=$PROJ_DIR$\ITM.log
 [CallStackLog]
 Enabled=0
 [DriverProfiling]
@@ -79,9 +86,8 @@ Exclusions=
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\main.c}.111.3" 0 0 1 "" 0 "" 0
-Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\main.c}.159.3" 0 0 1 "" 0 "" 0
-Count=2
+Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\eeprom.c}.640.5" 0 0 1 "" 0 "" 0
+Count=1
 [Aliases]
 Count=0
 SuppressDialog=0

@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>3115250294</fileChecksum>
+  <fileChecksum>2013131046</fileChecksum>
   <configuration>
     <name>STM32303C-EVAL</name>
     <outputs>
@@ -1384,6 +1384,7 @@
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_tim.c</file>
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_usart.c</file>
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_wwdg.c</file>
+      <file>$PROJ_DIR$\TERMOM STM32F303\Obj\calibration.pbi</file>
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_crc.c</file>
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_dac.c</file>
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_dbgmcu.c</file>
@@ -1391,6 +1392,9 @@
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_exti.c</file>
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_flash.c</file>
       <file>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_gpio.c</file>
+      <file>$PROJ_DIR$\..\calibration.c</file>
+      <file>$PROJ_DIR$\..\calibration.h</file>
+      <file>$PROJ_DIR$\TERMOM STM32F303\Obj\calibration.o</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_comp.c</name>
@@ -1567,24 +1571,9 @@
       <outputs>
         <tool>
           <name>ILINK</name>
-          <file> 67 72</file>
+          <file> 67</file>
         </tool>
       </outputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\TERMOM STM32F303\Exe\STM32303C-EVAL.out </name>
-      <outputs>
-        <tool>
-          <name>ILINK</name>
-          <file> 72</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>ILINK</name>
-          <file> 45 104 91 69 49 48 60 61 53 50 54 51 47 83 82 102 94 92 78 80 107 106 79 105 65 66 68 62 64 52 55 44 46</file>
-        </tool>
-      </inputs>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_adc.c</name>
@@ -2046,6 +2035,25 @@
         </tool>
       </inputs>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\calibration.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 128</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 137 75 110 35 34 36 30 31 33 32 28 29 26 24 25 27 22 41 23 109 108 114 113 4 112 111 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19</file>
+        </tool>
+      </inputs>
+    </file>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>ILINK</tool>
+    </forcedrebuild>
   </configuration>
 </project>
 
