@@ -41,7 +41,24 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+#define USARTx_IRQHANDLER   USART1_IRQHandler
+
+#define TXBUFFERSIZE   100 //(countof(TxBuffer) - 1)
+
+
+/* Private macro -------------------------------------------------------------*/
+#define countof(a)   (sizeof(a) / sizeof(*(a)))
+
 /* Private variables ---------------------------------------------------------*/
+uint8_t TxBuffer[TXBUFFERSIZE];
+uint8_t RxBuffer[RXBUFFERSIZE];
+uint8_t NbrOfDataToTransfer = TXBUFFERSIZE;
+uint8_t NbrOfDataToRead = RXBUFFERSIZE;
+__IO uint8_t TxCounter = 0; 
+__IO uint16_t RxCounter = 0; 
+uint32_t DevTicks;
+
 CanRxMsg RxMessage = {0};
 extern uint8_t KeyNumber;
 

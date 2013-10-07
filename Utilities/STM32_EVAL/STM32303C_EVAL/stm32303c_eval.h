@@ -37,6 +37,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f30x.h"
 #include "stm32_eval_legacy.h"
+#include "hw_config.h"
 
 /** @addtogroup Utilities
   * @{
@@ -92,12 +93,13 @@ typedef enum
   JOY_UP = 5
 } JOYState_TypeDef
 ;
-
+#if  0
 typedef enum 
 {
   COM1 = 0,
   COM2 = 1
 } COM_TypeDef;   
+#endif
 /**
   * @}
   */ 
