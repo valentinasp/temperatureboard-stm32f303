@@ -20,7 +20,7 @@
 
 /* Exported define -----------------------------------------------------------*/
 #define MAGIC 0xCA123CA
-#define CALIBRATION_VALUES_AREA_BEG_ADDR	0x08080000
+#define CALIBRATION_VALUES_AREA_BEG_ADDR	0x01//0x08080000
    
 #define sCALIB_ERRORLED_PIN                     GPIO_Pin_9
 #define sCALIB_ERRORLED_GPIO_PORT               GPIOB
@@ -54,20 +54,13 @@
 #define IOCALIB_PIN()          GPIO_ReadInputDataBit(CALIBRATION_PORT, CALIBRATION_PIN)
 
 #define MAXCHANNEL 4
-#define MAXPOINTS 9 //8,10,14,18,24,30,50,70,90 pecents
+#define MAXPOINTS 2 //0,100 gradus
 
 #pragma pack (push, 1)
 typedef struct{
   volatile unsigned long cbMagic;//Magic number used for validate image
-  volatile unsigned long cbCalibrValue8; // 8 percent
-  volatile unsigned long cbCalibrValue10;// 10 percent
-  volatile unsigned long cbCalibrValue14;// 14 percent
-  volatile unsigned long cbCalibrValue18;// 18 percent
-  volatile unsigned long cbCalibrValue24;// 24 percent
-  volatile unsigned long cbCalibrValue30;// 30 percent
-  volatile unsigned long cbCalibrValue50;// 50 percent
-  volatile unsigned long cbCalibrValue70;// 70 percent
-  volatile unsigned long cbCalibrValue90;// 90 percent
+  volatile unsigned long cbCalibrValue0;        // 0 gradus
+  volatile unsigned long cbCalibrValue100;      // 100 gradus
   volatile unsigned long cbCRC;//Examine cabibration values crc
 } CalibrationTypeDef;
 #pragma pack (pop)
