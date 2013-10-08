@@ -28,6 +28,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "eeprom.h"
+#include "serial.h"
+#include "stdio.h"
 
 /** @addtogroup STM32F30x_StdPeriph_Examples
   * @{
@@ -75,7 +77,7 @@ int main(void)
      */
   /* Test Virtual EEPROM */ 
 #if 1  
-  uint16_t varvalue = 0;
+  //uint16_t varvalue = 0;
   unsigned char SendBuffer[10];
   unsigned char ResiveBuffer[10];
   
@@ -122,6 +124,10 @@ int main(void)
   STM_EVAL_LEDInit(LED1);
   STM_EVAL_LEDInit(LED2);
   
+  init_serial();
+for(;;){  
+  printf("Hello world!");
+}
   /* Configure Push button key */
  // STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO); 
    
@@ -245,8 +251,6 @@ void LED_Display(uint8_t Ledstatus)
   /* Turn off all leds */
   STM_EVAL_LEDOff(LED1);
   STM_EVAL_LEDOff(LED2);
-  STM_EVAL_LEDOff(LED3);
-  STM_EVAL_LEDOff(LED4);
   
   switch(Ledstatus)
   {
@@ -258,13 +262,6 @@ void LED_Display(uint8_t Ledstatus)
       STM_EVAL_LEDOn(LED2);
       break;
  
-    case(3): 
-      STM_EVAL_LEDOn(LED3);
-      break;
-
-    case(4): 
-      STM_EVAL_LEDOn(LED4);
-      break;
     default:
       break;
   }
