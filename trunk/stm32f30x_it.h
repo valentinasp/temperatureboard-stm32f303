@@ -51,6 +51,7 @@ void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
 void USB_LP_CAN1_RX0_IRQHandler(void);
+void USART1_IRQHandler(void);
 
 #define RXBUFFERSIZE   0x01
 extern uint32_t DevTicks;
@@ -59,6 +60,8 @@ extern uint8_t NbrOfDataToRead;
 extern __IO uint8_t TxCounter; 
 extern __IO uint16_t RxCounter;
 extern uint8_t RxBuffer[RXBUFFERSIZE];
+
+
 
 #ifdef __cplusplus
 }

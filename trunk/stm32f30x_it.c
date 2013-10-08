@@ -173,6 +173,37 @@ void SysTick_Handler(void)
 /*  file (startup_stm32f30x.s).                                               */
 /******************************************************************************/
 /**
+  * @brief  This function handles USART1 global interrupt request.
+  * @param  None
+  * @retval None
+  */
+void USART1_IRQHandler(void)
+{
+  if(USART_GetITStatus(EVAL_COM1, USART_IT_RXNE) != RESET)
+  {
+    /* Read one byte from the receive data register */
+    RxBuffer[RxCounter++] = (USART_ReceiveData(EVAL_COM1) & 0x7F);
+
+    if(RxCounter == NbrOfDataToRead)
+    {
+      /* Disable the EVAL_COM1 Receive interrupt */
+      //USART_ITConfig(EVAL_COM1, USART_IT_RXNE, DISABLE);
+    }
+  }
+
+  if(USART_GetITStatus(EVAL_COM1, USART_IT_TXE) != RESET)
+  {   
+    /* Write one byte to the transmit data register */
+    USART_SendData(EVAL_COM1, TxBuffer[TxCounter++]);
+
+    if(TxCounter == NbrOfDataToTransfer)
+    {
+      /* Disable the EVAL_COM1 Transmit interrupt */
+      USART_ITConfig(EVAL_COM1, USART_IT_TXE, DISABLE);
+    }
+  }
+}
+/**
   * @brief  This function handles CAN1 RX0 request.
   * @param  None
   * @retval None

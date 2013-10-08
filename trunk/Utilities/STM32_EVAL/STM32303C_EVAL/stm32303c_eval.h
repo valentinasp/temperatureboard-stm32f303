@@ -58,30 +58,11 @@
 /** @defgroup STM32303C_EVAL_LOW_LEVEL_Exported_Types
   * @{
   */
-typedef enum 
-{
-  LED1 = 0,
-  LED2 = 1,
-  LED3 = 2,
-  LED4 = 3
-} Led_TypeDef;
 
-typedef enum 
-{
-  BUTTON_NONE = 0,
-  BUTTON_KEY = 1,
-  BUTTON_RIGHT = 2,
-  BUTTON_LEFT = 3,
-  BUTTON_UP = 4,
-  BUTTON_DOWN = 5,
-  BUTTON_SEL = 6
-} Button_TypeDef;
 
-typedef enum 
-{  
-  BUTTON_MODE_GPIO = 0,
-  BUTTON_MODE_EXTI = 1
-} ButtonMode_TypeDef;
+
+
+
 
 typedef enum 
 { 
@@ -91,15 +72,8 @@ typedef enum
   JOY_LEFT = 3,
   JOY_RIGHT = 4,
   JOY_UP = 5
-} JOYState_TypeDef
-;
-#if  0
-typedef enum 
-{
-  COM1 = 0,
-  COM2 = 1
-} COM_TypeDef;   
-#endif
+} JOYState_TypeDef;
+
 /**
   * @}
   */ 
@@ -400,13 +374,8 @@ typedef enum
 /** @defgroup STM32303C_EVAL_LOW_LEVEL_Exported_Functions
   * @{
   */
-void STM_EVAL_LEDInit(Led_TypeDef Led);
-void STM_EVAL_LEDOn(Led_TypeDef Led);
-void STM_EVAL_LEDOff(Led_TypeDef Led);
-void STM_EVAL_LEDToggle(Led_TypeDef Led);
-void STM_EVAL_PBInit(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode);
-uint32_t STM_EVAL_PBGetState(Button_TypeDef Button);
-void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct);
+
+//void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct);
 void SD_LowLevel_DeInit(void);
 void SD_LowLevel_Init(void); 
 void TS751_LowLevel_DeInit(void);

@@ -19,6 +19,25 @@
 
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
+
+typedef enum 
+{
+  LED1 = 0,
+  LED2 = 1,
+} Led_TypeDef;
+
+typedef enum 
+{
+  BUTTON_NONE = 0,
+  BUTTON_KEY = 1
+} Button_TypeDef;
+
+typedef enum 
+{  
+  BUTTON_MODE_GPIO = 0,
+  BUTTON_MODE_EXTI = 1
+} ButtonMode_TypeDef;
+
 /* Define the Device Mode Type */
 typedef enum 
 {
@@ -60,6 +79,7 @@ typedef enum
   COM1 = 0,
   COM2 = 1
 } COM_TypeDef;
+
 
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
@@ -108,25 +128,48 @@ typedef enum
 /**
  * @brief Definition for COM port1, connected to USART1
  */ 
-#define PORT_COM1                   USART1
-#define PORT_COM1_GPIO              GPIOA
-#define PORT_COM1_CLK               RCC_APB2Periph_USART1
-#define PORT_COM1_GPIO_CLK          RCC_APB2Periph_GPIOA
-#define PORT_COM1_RxPin             GPIO_Pin_10
-#define PORT_COM1_TxPin             GPIO_Pin_9
+#define EVAL_COM1                        USART1
+#define EVAL_COM1_CLK                    RCC_APB2Periph_USART1
 
-/**
- * @brief Definition for COM port2, connected to USART2
- */ 
-#define PORT_COM2                   USART2
-#define PORT_COM2_GPIO              GPIOA
-#define PORT_COM2_CLK               RCC_APB1Periph_USART2
-#define PORT_COM2_GPIO_CLK          RCC_APB2Periph_GPIOA
-#define PORT_COM2_RxPin             GPIO_Pin_3
-#define PORT_COM2_TxPin             GPIO_Pin_2
+#define EVAL_COM1_TX_PIN                 GPIO_Pin_4
+#define EVAL_COM1_TX_GPIO_PORT           GPIOC
+#define EVAL_COM1_TX_GPIO_CLK            RCC_AHBPeriph_GPIOC
+#define EVAL_COM1_TX_SOURCE              GPIO_PinSource4
+#define EVAL_COM1_TX_AF                  GPIO_AF_7
+
+#define EVAL_COM1_RX_PIN                 GPIO_Pin_1
+#define EVAL_COM1_RX_GPIO_PORT           GPIOE
+#define EVAL_COM1_RX_GPIO_CLK            RCC_AHBPeriph_GPIOE
+#define EVAL_COM1_RX_SOURCE              GPIO_PinSource1
+#define EVAL_COM1_RX_AF                  GPIO_AF_7
+
+#define EVAL_COM1_CTS_PIN                GPIO_Pin_11
+#define EVAL_COM1_CTS_GPIO_PORT          GPIOA
+#define EVAL_COM1_CTS_GPIO_CLK           RCC_AHBPeriph_GPIOA
+#define EVAL_COM1_CTS_SOURCE             GPIO_PinSource11
+#define EVAL_COM1_CTS_AF                 GPIO_AF_7
+
+#define EVAL_COM1_RTS_PIN                GPIO_Pin_12
+#define EVAL_COM1_RTS_GPIO_PORT          GPIOA
+#define EVAL_COM1_RTS_GPIO_CLK           RCC_AHBPeriph_GPIOA
+#define EVAL_COM1_RTS_SOURCE             GPIO_PinSource12
+#define EVAL_COM1_RTS_AF                 GPIO_AF_7
+   
+#define EVAL_COM1_IRQn                   USART1_IRQn
 
 /* Exported functions ------------------------------------------------------- */
+void STM_EVAL_LEDInit(Led_TypeDef Led);
+void STM_EVAL_LEDOn(Led_TypeDef Led);
+void STM_EVAL_LEDOff(Led_TypeDef Led);
+void STM_EVAL_LEDToggle(Led_TypeDef Led);
+void STM_EVAL_PBInit(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode);
+uint32_t STM_EVAL_PBGetState(Button_TypeDef Button);
+
+void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct);  
+void NVIC_Config(void);
 /* External variables --------------------------------------------------------*/
+ 
+
 
 #endif  /*__HW_CONFIG_H*/
 

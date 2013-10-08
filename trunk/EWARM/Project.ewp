@@ -1959,7 +1959,13 @@
       <name>$PROJ_DIR$\..\main.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\serial.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\stm32f30x_it.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\utils.c</name>
     </file>
   </group>
 </project>
