@@ -51,7 +51,7 @@ void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
 void USB_LP_CAN1_RX0_IRQHandler(void);
-void USART1_IRQHandler(void);
+void USART2_IRQHandler(void);
 
 #define RXBUFFERSIZE   0x01
 extern uint32_t DevTicks;

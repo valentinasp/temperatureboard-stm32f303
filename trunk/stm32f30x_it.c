@@ -177,7 +177,7 @@ void SysTick_Handler(void)
   * @param  None
   * @retval None
   */
-void USART1_IRQHandler(void)
+void USART2_IRQHandler(void)
 {
   if(USART_GetITStatus(EVAL_COM1, USART_IT_RXNE) != RESET)
   {

@@ -67,7 +67,7 @@ void init_serial (void) {
 
   /* Enable the EVAL_COMX Transmoit interrupt: this interrupt is generated when the 
      EVAL_COM1 transmit data register is empty */  
-  USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
+  USART_ITConfig(EVAL_COM1, USART_IT_TXE, ENABLE);
   
   /* Wait until EVAL_COMX send the TxBuffer */
   while(TxCounter < NbrOfDataToTransfer)
@@ -75,12 +75,12 @@ void init_serial (void) {
   
   /* The software must wait until TC=1. The TC flag remains cleared during all data
      transfers and it is set by hardware at the last frame’s end of transmission*/
-  while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
+  while (USART_GetFlagStatus(EVAL_COM1, USART_FLAG_TC) == RESET)
   {}
  
   /* Enable the EVAL_COMX Receive interrupt: this interrupt is generated when the 
      EVAL_COMX receive data register is not empty */
-  USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+  USART_ITConfig(EVAL_COM1, USART_IT_RXNE, ENABLE);
 }
 
 
