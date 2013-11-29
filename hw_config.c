@@ -50,6 +50,7 @@ const uint8_t BUTTON_PIN_SOURCE[BUTTONn] = {KEY_BUTTON_EXTI_PIN_SOURCE};
 
 const uint8_t BUTTON_IRQn[BUTTONn] = {KEY_BUTTON_EXTI_IRQn};
 
+
 USART_TypeDef* COM_USART[COMn] = {EVAL_COM1}; 
 
 GPIO_TypeDef* COM_TX_PORT[COMn] = {EVAL_COM1_TX_GPIO_PORT};
@@ -93,7 +94,8 @@ void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct)
   RCC_AHBPeriphClockCmd(COM_TX_PORT_CLK[COM] | COM_RX_PORT_CLK[COM], ENABLE);
 
   /* Enable USART clock */
-  RCC_APB2PeriphClockCmd(COM_USART_CLK[COM], ENABLE); 
+  RCC_APB1PeriphClockCmd(COM_USART_CLK[COM], ENABLE); 
+  //RCC_APB2PeriphClockCmd(COM_USART_CLK[COM], ENABLE); 
 
   /* Connect PXx to USARTx_Tx */
   GPIO_PinAFConfig(COM_TX_PORT[COM], COM_TX_PIN_SOURCE[COM], COM_TX_AF[COM]);
@@ -130,7 +132,7 @@ void NVIC_Config(void)
   NVIC_InitTypeDef NVIC_InitStructure;
 
   /* Enable the USARTx Interrupt */
-  NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannel = EVAL_COM1_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
