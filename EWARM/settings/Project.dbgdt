@@ -44,7 +44,7 @@
         <expressions>
           
           
-        <item>TxMessage</item><item>VarDataTab</item><item>SendBuffer</item><item>ResiveBuffer</item><item>Status</item><item>VirtAddress</item><item>idx</item><item>Data</item><item>Buffer[0]</item><item>Buffer[1]</item><item>*(uint16_t *)(Buffer+2)</item><item>RxCounter</item><item>TxCounter</item><item>RxBuffer</item><item>TxBuffer</item><item>USART_InitStruct</item><item>COM</item><item>COM1</item><item>USARTx</item><item>USART_InitStruct</item><item></item></expressions>
+        <item>TxMessage</item><item>VarDataTab</item><item>SendBuffer</item><item>ResiveBuffer</item><item>Status</item><item>VirtAddress</item><item>idx</item><item>Data</item><item>Buffer[0]</item><item>Buffer[1]</item><item>*(uint16_t *)(Buffer+2)</item><item>RxCounter</item><item>TxCounter</item><item>RxBuffer</item><item>TxBuffer</item><item>USART_InitStruct</item><item>COM</item><item>COM1</item><item>USARTx</item><item>USART_InitStruct</item><item/></expressions>
         <col-names>
           
           
