@@ -128,19 +128,19 @@ typedef enum
 /**
  * @brief Definition for COM port1, connected to USART1
  */ 
-#define EVAL_COM1                        USART2
-#define EVAL_COM1_CLK                    RCC_APB1Periph_USART2
+#define EVAL_COM1                        USART1
+#define EVAL_COM1_CLK                    RCC_APB2Periph_USART1
 
-#define EVAL_COM1_TX_PIN                 GPIO_Pin_2
+#define EVAL_COM1_TX_PIN                 GPIO_Pin_9
 #define EVAL_COM1_TX_GPIO_PORT           GPIOA
 #define EVAL_COM1_TX_GPIO_CLK            RCC_AHBPeriph_GPIOA
-#define EVAL_COM1_TX_SOURCE              GPIO_PinSource2
+#define EVAL_COM1_TX_SOURCE              GPIO_PinSource9
 #define EVAL_COM1_TX_AF                  GPIO_AF_7
 
-#define EVAL_COM1_RX_PIN                 GPIO_Pin_3
+#define EVAL_COM1_RX_PIN                 GPIO_Pin_10
 #define EVAL_COM1_RX_GPIO_PORT           GPIOA
 #define EVAL_COM1_RX_GPIO_CLK            RCC_AHBPeriph_GPIOA
-#define EVAL_COM1_RX_SOURCE              GPIO_PinSource3
+#define EVAL_COM1_RX_SOURCE              GPIO_PinSource10
 #define EVAL_COM1_RX_AF                  GPIO_AF_7
 
 #define EVAL_COM1_CTS_PIN                GPIO_Pin_11
@@ -155,7 +155,7 @@ typedef enum
 #define EVAL_COM1_RTS_SOURCE             GPIO_PinSource12
 #define EVAL_COM1_RTS_AF                 GPIO_AF_7
    
-#define EVAL_COM1_IRQn                   USART2_IRQn
+#define EVAL_COM1_IRQn                   USART1_IRQn
 
 /* Exported functions ------------------------------------------------------- */
 void STM_EVAL_LEDInit(Led_TypeDef Led);

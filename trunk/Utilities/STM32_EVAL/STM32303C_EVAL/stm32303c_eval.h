@@ -92,7 +92,7 @@ typedef enum
 /** @addtogroup STM32303C_EVAL_LOW_LEVEL_LED
   * @{
   */
-#define LEDn                             4
+#define LEDn                             2
 
 #define LED1_PIN                         GPIO_Pin_8
 #define LED1_GPIO_PORT                   GPIOB
@@ -101,14 +101,6 @@ typedef enum
 #define LED2_PIN                         GPIO_Pin_9
 #define LED2_GPIO_PORT                   GPIOB
 #define LED2_GPIO_CLK                    RCC_AHBPeriph_GPIOB
-  
-#define LED3_PIN                         GPIO_Pin_10
-#define LED3_GPIO_PORT                   GPIOE
-#define LED3_GPIO_CLK                    RCC_AHBPeriph_GPIOE
-  
-#define LED4_PIN                         GPIO_Pin_11
-#define LED4_GPIO_PORT                   GPIOE
-#define LED4_GPIO_CLK                    RCC_AHBPeriph_GPIOE
 
 /**
   * @}

@@ -126,7 +126,7 @@ int main(void)
   
   init_serial();
 for(;;){  
-  //printf("Hello world!");
+  //printf("Hello world!\n\r");
 }
   /* Configure Push button key */
  // STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO); 
