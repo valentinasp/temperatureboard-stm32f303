@@ -30,6 +30,8 @@
 #include "eeprom.h"
 #include "serial.h"
 #include "stdio.h"
+#include "adc.h"   
+#include "stm32f30x_it.h"
 
 /** @addtogroup STM32F30x_StdPeriph_Examples
   * @{
@@ -44,8 +46,14 @@
 #define KEY_PRESSED     0x00
 #define KEY_NOT_PRESSED 0x01
 
+#define TSK_IDLE          0
+#define TSK_PWR_OFF       2
+#define TSK_CLIBRATION    1
+
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+uint8_t KernelTask = TSK_IDLE;
+
 CanTxMsg TxMessage = {0};
 uint8_t KeyNumber = 0x0;
 
@@ -56,10 +64,14 @@ uint16_t VarValue1, VarValue2, VarValue3;
 uint16_t VirtAddVarTab[NB_OF_VAR] = {0x5555, 0x6666, 0x7777};
 uint16_t VarDataTab[NB_OF_VAR] = {0, 0, 0};
 
+RCC_ClocksTypeDef RCC_Clocks;
 
 /* Private function prototypes -----------------------------------------------*/
 static void CAN_Config(void);
-void Delay(void);
+//void Delay(void);
+
+void SysTick_Configuration(void);
+void kernel(void);
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -80,6 +92,8 @@ int main(void)
   //uint16_t varvalue = 0;
   unsigned char SendBuffer[10];
   unsigned char ResiveBuffer[10];
+  
+  SysTick_Configuration();
   
   /* Unlock the Flash Program Erase controller */
   FLASH_Unlock();
@@ -119,15 +133,16 @@ int main(void)
   EE_Read_Buff(VirtAddVarTab[0],ResiveBuffer,5);
   
 #endif
-       
+  ADC_Initialization();     
   /* Configures LED 1..4 */
   STM_EVAL_LEDInit(LED1);
   STM_EVAL_LEDInit(LED2);
+  STM_EVAL_LEDOff(LED2);
   
   init_serial();
-for(;;){  
-  //printf("Hello world!\n\r");
-}
+//for(;;){  
+  printf("Hello world!\n\r");
+//}
   /* Configure Push button key */
  // STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO); 
    
@@ -135,6 +150,9 @@ for(;;){
   CAN_Config();
   
   /* Infinite loop */
+  kernel();
+  for(;;);
+  
   while(1)
   {
 //    while(STM_EVAL_PBGetState(BUTTON_KEY) == KEY_PRESSED)
@@ -148,7 +166,7 @@ for(;;){
         LED_Display(++KeyNumber);
         TxMessage.Data[0] = KeyNumber;
         CAN_Transmit(CANx, &TxMessage);
-        Delay();
+        //Delay();
         
 //        while(STM_EVAL_PBGetState(BUTTON_KEY) != KEY_NOT_PRESSED)
 //        {
@@ -157,6 +175,129 @@ for(;;){
 //    }
   }
 }
+
+//====================== Kernel loop ==============================
+void kernel(void)
+{
+  uint32_t ticks;
+  uint32_t DevTicksRef100ms = 0; 
+  uint32_t DevTicksRef10ms  = 0; 
+  uint32_t DevTicksRef500ms = 0;
+  uint32_t DevTicksRef1s    = 0;
+  uint32_t DevTicksRef2_5s  = 0;
+  uint32_t DevTicksRef5s    = 0;
+ 
+  //__enable_irq(); 
+
+  /* infinite kernel loop */
+  for(;;){
+    ticks = DevTicks;
+    if((ticks - DevTicksRef10ms) >= 10){
+      //KeyScan(); // keyboard scan
+      //key = KeyGet(); // get keyboard values
+      
+      DevTicksRef10ms = ticks;     
+    } 
+    /* =============================================================
+     50 msec process 
+    ================================================================*/
+    if((ticks - DevTicksRef100ms) >= 50){ // 50ms   
+      //if (key->Pressed[KEYB_CALIBRATION_INDX] > 5 && !key->Lock[KEYB_CALIBRATION_INDX]){
+        //key->Lock[KEYB_CALIBRATION_INDX] = true;
+        //RunCalibrationProcess();
+        //CalibrationProcess(&CalibINDX,&CValues);
+        //cmd_help();
+        //Menu(MainMenu);
+      //}
+      
+      DevTicksRef100ms = ticks;
+    }
+    
+    /* =============================================================
+     500 msec process 
+    ================================================================*/
+    if((ticks - DevTicksRef500ms) >= 500){ // 500 msec
+      DevTicksRef500ms = ticks;
+      
+      printf("\x1b[2J");//terminal clear screen command
+      //double Humidity = 0;
+      //for(size_t Channel=0;Channel<MAXCHANNEL;Channel++){
+      //  GetValue(Channel,ADCValues[Channel],&Humidity);
+      //  printf("CH%d %d  volt:%.3f humidity: %.1f\r\n",Channel+1,ADCValues[Channel],Voltage[Channel],Humidity);
+      printf("ADC Value0 = %d\r\n",ADC_GetChannelConversionValue(0));
+      printf("ADC Value1 = %d\r\n",ADC_GetChannelConversionValue(1));
+      printf("ADC Value2 = %d\r\n",ADC_GetChannelConversionValue(2));
+      
+      printf("ADC Value3 = %d\r\n",ADC_GetChannelConversionValue(3));
+      printf("ADC Value4 = %d\r\n",ADC_GetChannelConversionValue(4));
+      printf("ADC Value5 = %d\r\n",ADC_GetChannelConversionValue(5));
+      //}
+      //
+    } 
+    
+    /* =============================================================
+    1 sec process
+    ================================================================*/
+    if((ticks - DevTicksRef1s) >= 1000){ // 1s      
+      DevTicksRef1s = ticks;
+      
+      //TestProg();
+      STM_EVAL_LEDToggle(LED1);
+      STM_EVAL_LEDToggle(LED2);
+    }
+     /* =============================================================
+    2,5 sec process
+    ================================================================*/
+    if((ticks - DevTicksRef2_5s) >= 2500){ // 2,5 s      
+      DevTicksRef2_5s = ticks;
+      /*
+      if(GeneratorVal){
+        GetADCValues(tempADCValues2,sizeof(tempADCValues2)/sizeof(tempADCValues2[0]));
+      }else{
+        GetADCValues(tempADCValues1,sizeof(tempADCValues1)/sizeof(tempADCValues1[0]));
+      }
+      for(size_t ch=0;ch<MAXCHANNEL;ch++){
+        ADCValues[ch] = (tempADCValues1[ch]+tempADCValues2[ch])/2;
+        Voltage[ch] = (float)(ADCValues[ch]*0.80586);
+        Voltage[ch] = Voltage[ch]/1000;  
+      }
+        
+      SetGenerator(&GeneratorVal);
+      */
+    }
+    /* =============================================================
+    5 sec process
+    ================================================================*/
+    if((ticks - DevTicksRef5s) >= 5000){ // 5s 
+      DevTicksRef5s = ticks;
+      
+      
+    }
+    //==================================================================     
+  }  
+}
+//====================== End kernel loop ==============================
+
+
+/**
+* @brief  Configures the SysTick to generate an interrupt each 250 ms.
+* @param  None
+* @retval None
+*/
+void SysTick_Configuration(void)
+{
+  DevTicks = 0;
+  /* SysTick end of count event each 10ms */
+  //RCC_GetClocksFreq(&RCC_Clocks);
+  //SysTick_Config(RCC_Clocks.HCLK_Frequency / 10000);
+  if (SysTick_Config(SystemCoreClock / 1000))
+  { 
+    /* Capture error */ 
+    while (1);
+  }
+  //SysTick_Config(32000000/10000);
+}
+
 
 /**
   * @brief  Configures the CAN.
@@ -272,7 +413,7 @@ void LED_Display(uint8_t Ledstatus)
   * @param  None
   * @retval None
   */
-void Delay(void)
+/*void Delay(void)
 {
   uint16_t nTime = 0x0000;
 
@@ -280,7 +421,7 @@ void Delay(void)
   {
   }
 }
-
+*/
 #ifdef  USE_FULL_ASSERT
 
 /**

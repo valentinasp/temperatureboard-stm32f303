@@ -29,6 +29,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f30x_it.h"
+#include "delay.h"
 
 /** @addtogroup STM32F30x_StdPeriph_Examples
   * @{
@@ -164,6 +165,8 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
+  TimingDelay_Decrement();
+  DevTicks++;
 }
 
 /******************************************************************************/
