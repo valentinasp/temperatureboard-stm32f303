@@ -163,7 +163,7 @@
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>30</version>
+        <version>31</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -408,6 +408,10 @@
         <option>
           <name>CCOptStrategySlave</name>
           <version>0</version>
+          <state>1</state>
+        </option>
+        <option>
+          <name>CCGuardCalls</name>
           <state>1</state>
         </option>
       </data>
@@ -1031,7 +1035,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>7.10.1.6733</state>
+          <state>7.10.3.6927</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1107,7 +1111,7 @@
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>30</version>
+        <version>31</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1352,6 +1356,10 @@
         <option>
           <name>CCOptStrategySlave</name>
           <version>0</version>
+          <state>1</state>
+        </option>
+        <option>
+          <name>CCGuardCalls</name>
           <state>1</state>
         </option>
       </data>
@@ -1894,6 +1902,18 @@
     <name>CMSIS</name>
     <file>
       <name>$PROJ_DIR$\..\Libraries\CMSIS\Device\ST\STM32F30x\Source\Templates\system_stm32f30x.c</name>
+    </file>
+  </group>
+  <group>
+    <name>CPAL</name>
+    <file>
+      <name>$PROJ_DIR$\..\Libraries\STM32F30x_I2C_CPAL_Driver\src\stm32f30x_i2c_cpal.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Libraries\STM32F30x_I2C_CPAL_Driver\src\stm32f30x_i2c_cpal_hal.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\stm32f30x_i2c_cpal_usercallback.c</name>
     </file>
   </group>
   <group>
