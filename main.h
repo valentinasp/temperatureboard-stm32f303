@@ -32,6 +32,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f30x.h"
 #include "stm32303c_eval.h"
+#include "stm32f30x_i2c_cpal.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -47,6 +48,25 @@
 #define CAN_TX_SOURCE              GPIO_PinSource12       
 
 
+
+#define I2C_DevStructure        I2C1_DevStructure
+
+#define countof(a) (sizeof(a) / sizeof(*(a)))
+
+#define MAX_BUFF_SIZE           200
+#define BUFFER_SIZE             (countof(tStateSignal)-1)
+
+#define OWN_ADDRESS             0x68
+
+#define I2C_TIMING              0x40110405 
+
+#define ACTION_NONE             0xFF
+#define ACTION_DISABLED         0xFD
+#define ACTION_PENDING          0xFE
+#define ACTION_PERIODIC         0xFC
+
+#define STATE_OFF               0
+#define STATE_ON                1
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 void LED_Display(uint8_t Ledstatus);
