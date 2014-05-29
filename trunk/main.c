@@ -86,6 +86,7 @@ void kernel(void);
 static int8_t drv_i2c_EOT_Wait(void);
 static int8_t drv_i2c_WriteBuffer(const uint8_t *Data, uint16_t DataLength);
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd);
+void InitCPAL(void);
 /**
   * @brief  Main program.
   * @param  None
@@ -152,9 +153,9 @@ int main(void)
   STM_EVAL_LEDOff(LED2);
   
   init_serial();
-//for(;;){  
+ 
   printf("Hello world!\n\r");
-//}
+
   /* Configure Push button key */
  // STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO); 
    
@@ -163,44 +164,7 @@ int main(void)
   
   
 /* Start CPAL communication configuration ***********************************/
-
-  /* Initialize local Reception structures */
-  sRxStructure.wNumData = BufferSize;       /* Maximum Number of data to be received */
-  sRxStructure.pbBuffer = 0;//tRxBuffer;        /* Common Rx buffer for all received data */
-  sRxStructure.wAddr1 = 0x30;//0;                  /* Not needed */
-  sRxStructure.wAddr2 = 0;                  /* Not needed */
-  
-  /* Initialize local Transmission structures */
-  sTxStructure.wNumData = 0;//BufferSize;       /* Maximum Number of data to be received */
-  sTxStructure.pbBuffer = &tTxBuffer[0];     /* Common Rx buffer for all received data */
-  sTxStructure.wAddr1 = 0x30;//OWN_ADDRESS;        /* The own board address */
-  sTxStructure.wAddr2 = 0;//0;                  /* Not needed */
-  
-  /* Set HSI as I2C clock source */
-  RCC_I2CCLKConfig(RCC_I2C1CLK_HSI);
-  
-  /* Configure the device structure */
-  CPAL_I2C_StructInit(&I2C_DevStructure);      /* Set all fields to default values */
-  //I2C_DevStructure.CPAL_Mode = CPAL_MODE_SLAVE;
-  I2C_DevStructure.CPAL_Mode = CPAL_MODE_MASTER;
-  I2C_DevStructure.wCPAL_Options =  CPAL_OPT_NO_MEM_ADDR ;
-#ifdef CPAL_I2C_DMA_PROGMODEL
-  I2C_DevStructure.CPAL_ProgModel = CPAL_PROGMODEL_DMA;
-#elif defined (CPAL_I2C_IT_PROGMODEL)
-  I2C_DevStructure.CPAL_ProgModel = CPAL_PROGMODEL_INTERRUPT;
-#else
- #error "Please select one of the programming model (in stm32f30x_i2c_cpal_conf.h)"
-#endif
-  I2C_DevStructure.pCPAL_I2C_Struct->I2C_Timing = I2C_TIMING;
-  I2C_DevStructure.pCPAL_I2C_Struct->I2C_OwnAddress1 = OWN_ADDRESS;
-  I2C_DevStructure.pCPAL_TransferRx = &sRxStructure;
-  I2C_DevStructure.pCPAL_TransferTx = &sTxStructure;
-  
-  /* Initialize CPAL device with the selected parameters */
-  CPAL_I2C_Init(&I2C_DevStructure);
-  
-//  delay(5000); /* Delay 5000 ms */
-  
+  InitCPAL();
  //==========================
   sRxStructure.wNumData = 0; /* Number of data to be read */
   sRxStructure.pbBuffer = (uint8_t*)Data; /* Transmit buffer */
@@ -214,7 +178,8 @@ int main(void)
   /* Infinite loop */
   kernel();
   for(;;);
-  
+
+#if 0  
   while(1)
   {
 //    while(STM_EVAL_PBGetState(BUTTON_KEY) == KEY_PRESSED)
@@ -236,6 +201,7 @@ int main(void)
 //      }
 //    }
   }
+#endif
 }
 
 //====================== Kernel loop ==============================
@@ -517,6 +483,9 @@ void assert_failed(uint8_t* file, uint32_t line)
 #endif
 
 
+// ===============   I2C  ======================================================
+
+//==============================================================================
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd)
 {
  /* If error return */
@@ -530,7 +499,6 @@ static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd)
    sRxStructure.pbBuffer = buf;
    sRxStructure.wAddr2 = cmd;
    I2C_DevStructure.pCPAL_TransferRx = &sRxStructure;
-//   I2C_DevStructure.wCPAL_Options &= ~CPAL_OPT_NO_MEM_ADDR; /* send command right after address */
    I2C_DevStructure.wCPAL_Options &= ~CPAL_OPT_NO_MEM_ADDR;
    I2C_DevStructure.wCPAL_Options &= ~CPAL_OPT_16BIT_REG;
    if(CPAL_I2C_Read(&I2C_DevStructure) != CPAL_PASS){
@@ -548,7 +516,6 @@ static int8_t drv_i2c_WriteBuffer(const uint8_t *Data, uint16_t DataLength)
 {
   /* If error return */
   if(drv_i2c_err){return 1;}
-
   
   if(!drv_i2c_err){
     I2C_DevStructure.wCPAL_Options |= CPAL_OPT_NO_MEM_ADDR;
@@ -557,9 +524,6 @@ static int8_t drv_i2c_WriteBuffer(const uint8_t *Data, uint16_t DataLength)
     sTxStructure.wNumData = DataLength; /* Number of data to be written */
     sTxStructure.pbBuffer = (uint8_t*)Data; /* Power Monitor buffer */
     I2C_DevStructure.pCPAL_TransferTx = &sTxStructure;
-    //I2C1_DevStructure.wCPAL_Options |= CPAL_OPT_I2C_NOSTOP;
-    //I2C1_DevStructure.wCPAL_Options |= CPAL_OPT_I2C_NOSTOP_MODE;
-
 
     /* Wait the end of transfer */
     drv_i2c_err = drv_i2c_EOT_Wait();
@@ -597,6 +561,45 @@ static int8_t drv_i2c_EOT_Wait(void)
   }
   return drv_i2c_err;
 }
+
+void InitCPAL(void){
+  
+  /* Initialize local Reception structures */
+  sRxStructure.wNumData = BufferSize;       /* Maximum Number of data to be received */
+  sRxStructure.pbBuffer = 0;//tRxBuffer;        /* Common Rx buffer for all received data */
+  sRxStructure.wAddr1 = 0x30;//0;                  /* Not needed */
+  sRxStructure.wAddr2 = 0;                  /* Not needed */
+  
+  /* Initialize local Transmission structures */
+  sTxStructure.wNumData = 0;//BufferSize;       /* Maximum Number of data to be received */
+  sTxStructure.pbBuffer = &tTxBuffer[0];     /* Common Rx buffer for all received data */
+  sTxStructure.wAddr1 = 0x30;//OWN_ADDRESS;        /* The own board address */
+  sTxStructure.wAddr2 = 0;//0;                  /* Not needed */
+  
+  /* Set HSI as I2C clock source */
+  RCC_I2CCLKConfig(RCC_I2C1CLK_HSI);
+  
+  /* Configure the device structure */
+  CPAL_I2C_StructInit(&I2C_DevStructure);      /* Set all fields to default values */
+  I2C_DevStructure.CPAL_Mode = CPAL_MODE_MASTER;
+  I2C_DevStructure.wCPAL_Options =  CPAL_OPT_NO_MEM_ADDR ;
+#ifdef CPAL_I2C_DMA_PROGMODEL
+  I2C_DevStructure.CPAL_ProgModel = CPAL_PROGMODEL_DMA;
+#elif defined (CPAL_I2C_IT_PROGMODEL)
+  I2C_DevStructure.CPAL_ProgModel = CPAL_PROGMODEL_INTERRUPT;
+#else
+ #error "Please select one of the programming model (in stm32f30x_i2c_cpal_conf.h)"
+#endif
+  I2C_DevStructure.pCPAL_I2C_Struct->I2C_Timing = I2C_TIMING;
+  I2C_DevStructure.pCPAL_I2C_Struct->I2C_OwnAddress1 = OWN_ADDRESS;
+  I2C_DevStructure.pCPAL_TransferRx = &sRxStructure;
+  I2C_DevStructure.pCPAL_TransferTx = &sTxStructure;
+  
+  /* Initialize CPAL device with the selected parameters */
+  CPAL_I2C_Init(&I2C_DevStructure);
+  
+}
+// =========================  End I2C  =========================================
 
 /**
   * @}
