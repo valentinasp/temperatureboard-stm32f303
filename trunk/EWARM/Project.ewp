@@ -163,18 +163,12 @@
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>31</version>
+        <version>30</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
-          <name>CCOptimizationNoSizeConstraints</name>
-          <state>0</state>
-        </option>
-        <option>
           <name>CCDefines</name>
-          <state>USE_STDPERIPH_DRIVER</state>
-          <state>STM32F30X</state>
-          <state>USE_STM32303C_EVAL</state>
+          <state></state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -235,7 +229,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11111110</state>
+          <state>00000000</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
@@ -259,7 +253,7 @@
         </option>
         <option>
           <name>CCLangConformance</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCSignedPlainChar</name>
@@ -267,7 +261,7 @@
         </option>
         <option>
           <name>CCRequirePrototypes</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCMultibyteSupport</name>
@@ -287,7 +281,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>$FILE_BNAME$.o</state>
+          <state></state>
         </option>
         <option>
           <name>CCLibConfigHeader</name>
@@ -303,12 +297,7 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
-          <state>$PROJ_DIR$\..\</state>
-          <state>$PROJ_DIR$\..\Libraries\CMSIS\Device\ST\STM32F30x\Include</state>
-          <state>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\inc</state>
-          <state>$PROJ_DIR$\..\Libraries\STM32F30x_I2C_CPAL_Driver\inc</state>
-          <state>$PROJ_DIR$\..\Utilities\STM32_EVAL\Common</state>
-          <state>$PROJ_DIR$\..\Utilities\STM32_EVAL\STM32303C_EVAL</state>
+          <state></state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -328,16 +317,16 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CompilerMisraRules98</name>
@@ -402,17 +391,17 @@
           <state>0</state>
         </option>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCNoLiteralPool</name>
           <state>0</state>
         </option>
         <option>
           <name>CCOptStrategySlave</name>
           <version>0</version>
-          <state>1</state>
-        </option>
-        <option>
-          <name>CCGuardCalls</name>
-          <state>1</state>
+          <state>0</state>
         </option>
       </data>
     </settings>
@@ -1035,7 +1024,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>7.10.3.6927</state>
+          <state>7.10.1.6733</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1091,7 +1080,7 @@
         <option>
           <name>GBECoreSlave</name>
           <version>20</version>
-          <state>39</state>
+          <state>40</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -1111,13 +1100,9 @@
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>31</version>
+        <version>30</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
-        <option>
-          <name>CCOptimizationNoSizeConstraints</name>
-          <state>0</state>
-        </option>
         <option>
           <name>CCDefines</name>
           <state>USE_STDPERIPH_DRIVER</state>
@@ -1183,7 +1168,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11111110</state>
+          <state>00000000</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
@@ -1207,7 +1192,7 @@
         </option>
         <option>
           <name>CCLangConformance</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCSignedPlainChar</name>
@@ -1215,7 +1200,7 @@
         </option>
         <option>
           <name>CCRequirePrototypes</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCMultibyteSupport</name>
@@ -1276,16 +1261,16 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>3</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>0</state>
         </option>
         <option>
           <name>CompilerMisraRules98</name>
@@ -1350,17 +1335,17 @@
           <state>0</state>
         </option>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCNoLiteralPool</name>
           <state>0</state>
         </option>
         <option>
           <name>CCOptStrategySlave</name>
           <version>0</version>
-          <state>1</state>
-        </option>
-        <option>
-          <name>CCGuardCalls</name>
-          <state>1</state>
+          <state>0</state>
         </option>
       </data>
     </settings>
@@ -2031,6 +2016,18 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\main.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\meniu_core.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\menu.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\menu.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\menu_core.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\serial.c</name>
