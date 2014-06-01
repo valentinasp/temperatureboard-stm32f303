@@ -225,7 +225,7 @@ void ADC_Initialization(void)
     // Передача данных из периферии в память
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
     // Размер буфера
-    DMA_InitStructure.DMA_BufferSize = 3;
+    DMA_InitStructure.DMA_BufferSize = 4;
     // Адрес источника данных не инкрементируем - он всегда один и 
     // тот же
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
@@ -246,7 +246,10 @@ void ADC_Initialization(void)
     // Данные будем брать из регистра данных ADC1
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(ADC2->DR);
     // Переправлять данные будем в переменную ADC_Result
-    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&ADC_ConvertedValue_Tbl[adc_channel_3];
+    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&ADC_ConvertedValue_Tbl[adc_channel_4];
+    // Размер буфера
+    DMA_InitStructure.DMA_BufferSize = 3;
+    
     DMA_Init(DMA2_Channel1, &DMA_InitStructure);
     // Включаем первый канал DMA1
     DMA_Cmd(DMA2_Channel1, ENABLE);
@@ -295,14 +298,18 @@ void ADC_Initialization(void)
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_OverrunMode = ADC_OverrunMode_Disable;   
     ADC_InitStructure.ADC_AutoInjMode = ADC_AutoInjec_Disable;  
-    ADC_InitStructure.ADC_NbrOfRegChannel = 3;
+    ADC_InitStructure.ADC_NbrOfRegChannel = 4;
     ADC_Init(ADC1, &ADC_InitStructure);
+    
+    ADC_InitStructure.ADC_NbrOfRegChannel = 3;
     ADC_Init(ADC2, &ADC_InitStructure);
  
+    ADC_TempSensorCmd(ADC1, ENABLE);
     // Включаем третий канал первого модуля АЦП 
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_2, 1, ADC_SampleTime_601Cycles5);//ADC_SampleTime_7Cycles5);
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_3, 2, ADC_SampleTime_601Cycles5);
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 3, ADC_SampleTime_601Cycles5);
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_TempSensor, 1, ADC_SampleTime_181Cycles5 );//ADC_SampleTime_7Cycles5);
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_2, 2, ADC_SampleTime_601Cycles5 );
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_3, 3, ADC_SampleTime_601Cycles5 );
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 4, ADC_SampleTime_601Cycles5 );
     
     ADC_RegularChannelConfig(ADC2, ADC_Channel_1, 1, ADC_SampleTime_601Cycles5);//ADC_SampleTime_7Cycles5);
     ADC_RegularChannelConfig(ADC2, ADC_Channel_2, 2, ADC_SampleTime_601Cycles5);
