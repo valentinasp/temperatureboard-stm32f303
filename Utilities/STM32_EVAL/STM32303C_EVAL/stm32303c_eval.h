@@ -101,6 +101,10 @@ typedef enum
 #define LED2_PIN                         GPIO_Pin_9
 #define LED2_GPIO_PORT                   GPIOB
 #define LED2_GPIO_CLK                    RCC_AHBPeriph_GPIOB
+    
+#define HEATING_PIN                      GPIO_Pin_10
+#define HEATING_GPIO_PORT                GPIOB
+#define HEATING_GPIO_CLK                 RCC_AHBPeriph_GPIOB
 
 /**
   * @}

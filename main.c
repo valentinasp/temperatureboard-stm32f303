@@ -30,7 +30,8 @@
 #include "eeprom.h"
 #include "serial.h"
 #include "stdio.h"
-#include "adc.h"   
+#include "adc.h" 
+#include "menu_core.h" 
 #include "stm32f30x_it.h"
 
 /** @addtogroup STM32F30x_StdPeriph_Examples
@@ -42,6 +43,15 @@
   */ 
 
 /* Private typedef -----------------------------------------------------------*/
+const SCMD MainMenu[] = {
+   "INFO",   cmd_bootinfo,
+   "ERASE",  NULL,//cmd_erase_calibration,
+   "RUNCAL", NULL,//cmd_run_calibration,
+   "SETID",  cmd_setboard_id,
+   "?",      cmd_help,
+   "EXIT", cmd_exit,
+    NULL,  NULL
+};
 /* Private define ------------------------------------------------------------*/
 #define KEY_PRESSED     0x00
 #define KEY_NOT_PRESSED 0x01
@@ -49,6 +59,13 @@
 #define TSK_IDLE          0
 #define TSK_PWR_OFF       2
 #define TSK_CLIBRATION    1
+
+//CAN Baudrate
+//#define CAN_1000 
+#define CAN_500 
+//#define CAN_250 
+//#define CAN_125 
+
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -146,7 +163,8 @@ int main(void)
   EE_Read_Buff(VirtAddVarTab[0],ResiveBuffer,5);
   
 #endif
-  ADC_Initialization();     
+  ADC_Initialization(); 
+  STM_HEATING_Init();
   /* Configures LED 1..4 */
   STM_EVAL_LEDInit(LED1);
   STM_EVAL_LEDInit(LED2);
@@ -175,9 +193,7 @@ int main(void)
   I2C1_DevStructure.wCPAL_Options &= ~CPAL_OPT_16BIT_REG;//8 bit
   
   
-  /* Infinite loop */
-  kernel();
-  for(;;);
+  
 
 #if 0  
   while(1)
@@ -190,8 +206,8 @@ int main(void)
 //      }
 //      else
 //      {
-        LED_Display(++KeyNumber);
-        TxMessage.Data[0] = KeyNumber;
+       // LED_Display(++KeyNumber);
+        TxMessage.Data[0] = ++KeyNumber;
         CAN_Transmit(CANx, &TxMessage);
         //Delay();
         
@@ -202,6 +218,9 @@ int main(void)
 //    }
   }
 #endif
+/* Infinite loop */
+  kernel();
+  for(;;);
 }
 
 //====================== Kernel loop ==============================
@@ -234,7 +253,7 @@ void kernel(void)
         //key->Lock[KEYB_CALIBRATION_INDX] = true;
         //RunCalibrationProcess();
         //CalibrationProcess(&CalibINDX,&CValues);
-        //cmd_help();
+        cmd_help();
         //Menu(MainMenu);
       //}
       
@@ -257,8 +276,10 @@ void kernel(void)
       printf("ADC Value2 = %d\r\n",ADC_GetChannelConversionValue(2));
       
       printf("ADC Value3 = %d\r\n",ADC_GetChannelConversionValue(3));
+      
       printf("ADC Value4 = %d\r\n",ADC_GetChannelConversionValue(4));
       printf("ADC Value5 = %d\r\n",ADC_GetChannelConversionValue(5));
+      printf("ADC Value6 = %d\r\n",ADC_GetChannelConversionValue(6));
       //}
       //
     } 
@@ -309,7 +330,9 @@ void kernel(void)
     if((ticks - DevTicksRef5s) >= 5000){ // 5s 
       DevTicksRef5s = ticks;
       
-      
+      //STM_HEATING_Toggle();
+      TxMessage.Data[0] = ++KeyNumber;
+      CAN_Transmit(CANx, &TxMessage);
     }
     //==================================================================     
   }  
@@ -390,11 +413,35 @@ static void CAN_Config(void)
   CAN_InitStructure.CAN_TXFP = DISABLE;
   CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;
   CAN_InitStructure.CAN_SJW = CAN_SJW_1tq;
-    
+
+#ifdef CAN_1000
   /* CAN Baudrate = 1MBps (CAN clocked at 36 MHz) */
   CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
   CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
   CAN_InitStructure.CAN_Prescaler = 2;
+#endif
+
+#ifdef CAN_500  
+  /* Baudrate = 500 Kbps (CAN clocked with 36Mhz)*/
+  CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
+  CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
+  CAN_InitStructure.CAN_Prescaler = 4;
+#endif
+  
+#ifdef CAN_250  
+  /* Baudrate = 250 Kbps (CAN clocked with 36Mhz)*/
+  CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
+  CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
+  CAN_InitStructure.CAN_Prescaler = 8;
+#endif
+  
+#ifdef CAN_125  
+  /* CAN Baudrate = 125kbps (CAN clocked at 36 MHz) */
+  CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
+  CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
+  CAN_InitStructure.CAN_Prescaler = 16;
+#endif
+    
   CAN_Init(CANx, &CAN_InitStructure);
 
   /* CAN filter init */

@@ -167,6 +167,11 @@ uint32_t STM_EVAL_PBGetState(Button_TypeDef Button);
 
 void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct);  
 void NVIC_Config(void);
+
+void STM_HEATING_Init(void);
+void STM_HEATING_On(void);
+void STM_HEATING_Off(void);
+void STM_HEATING_Toggle(void);
 /* External variables --------------------------------------------------------*/
  
 
