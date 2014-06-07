@@ -103,6 +103,7 @@ void kernel(void);
 static int8_t drv_i2c_EOT_Wait(void);
 static int8_t drv_i2c_WriteBuffer(const uint8_t *Data, uint16_t DataLength);
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd);
+static void SetBoardAddress (uint32_t Addr);
 void InitCPAL(void);
 /**
   * @brief  Main program.
@@ -294,11 +295,19 @@ void kernel(void)
       STM_EVAL_LEDToggle(LED1);
       STM_EVAL_LEDToggle(LED2);
       
+      SetBoardAddress(0x30);//Board nr1
       //Read redister
       tTxBuffer[0] = 0x00;
       drv_i2c_WriteBuffer(tTxBuffer,1); 
       drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
 
+      //Read redister
+      tTxBuffer[0] = 0x10;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
+      
+      SetBoardAddress(0x35);//Board nr2
+      
       //Read redister
       tTxBuffer[0] = 0x10;
       drv_i2c_WriteBuffer(tTxBuffer,1); 
@@ -645,6 +654,11 @@ void InitCPAL(void){
   /* Initialize CPAL device with the selected parameters */
   CPAL_I2C_Init(&I2C_DevStructure);
   
+}
+
+static void SetBoardAddress (uint32_t Addr){
+  sTxStructure.wAddr1=Addr;
+  sRxStructure.wAddr1=Addr;
 }
 // =========================  End I2C  =========================================
 
