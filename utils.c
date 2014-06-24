@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <ctype.h>
 //#include <stdlib.h>
+#include <string.h>
 #include "utils.h"
 #include "serial.h"
 
-int strtoul(char *s);
+
+//int strtoul(char *s);
 //extern int  getkey (void);
 
 /*----------------------------------------------------------------------------
@@ -15,6 +18,7 @@ signed int getline (char *lp, unsigned int n) {
 
    do {
       c = getkey ();
+      //c = get_char();
       switch (c) {
          case CNTLQ:                       /* ignore Control S/Q             */
          case CNTLS:
@@ -51,8 +55,30 @@ signed int getline (char *lp, unsigned int n) {
    return (true);
 }
 
+bool getmagicline (char *lp, unsigned int n) {
+   char *str_buffer;
+   char c;
+
+   c = get_char();
+   
+   if(c){
+     if(isprint(c)){
+       str_buffer = (char*) malloc (n+1);
+       memcpy(str_buffer,&lp[1],n-1);
+       str_buffer[n-1] = c;
+       memcpy(lp,str_buffer,n);
+       free(str_buffer);
+       return (true);
+     }else{
+        return (false);
+     }
+   }else{
+     return (false);
+   }
+}
+
 /* string -> signed int */
-int strtoul(char *s)
+/*int strtoul(char *s)
 {
 	int ret;
 	int radix = 10;
@@ -91,6 +117,7 @@ int strtoul(char *s)
 
 	return negative?(-ret):ret;
 }
+*/
 
 int WaitEventWithTimeout( int ( *event ) ( void ) , int cond , unsigned long ms )
 {

@@ -64,6 +64,21 @@ void Menu(const SCMD* menu){
   }
 }
 
+bool IsMagicStr(const char* magic_str){
+  size_t sizeofstr = strlen(magic_str);
+  
+  if(sizeofstr>sizeof(in_line)){
+    return (false);
+  }
+  if (getmagicline (in_line,sizeofstr) == true) {
+    in_line[sizeofstr]='\0';
+    if (strcmp (in_line, magic_str) == 0){
+       return (true);
+    }
+  }
+  return (false);
+}
+
 static char *get_entry (char *cp, char **pNext) {
    char *sp, lfn = 0, sep_ch = ' ';
 

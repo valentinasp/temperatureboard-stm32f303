@@ -18,6 +18,7 @@
 
 
 extern int getline (char *lp, unsigned int n);
+extern bool getmagicline (char *lp, unsigned int n);
 //extern int strtoul(char *s);
 extern int WaitEventWithTimeout( int ( *event ) ( void ) , int cond , unsigned long ms );
 /*---------------------------------------------------------------------------*/
