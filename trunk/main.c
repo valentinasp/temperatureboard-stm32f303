@@ -45,8 +45,8 @@
 /* Private typedef -----------------------------------------------------------*/
 const SCMD MainMenu[] = {
    "INFO",   cmd_bootinfo,
-   "ERASE",  NULL,//cmd_erase_calibration,
-   "RUNCAL", NULL,//cmd_run_calibration,
+   "ERASE",  cmd_erase_calibration,
+   "RUNCAL", cmd_run_calibration,
    "SETID",  cmd_setboard_id,
    "?",      cmd_help,
    "EXIT", cmd_exit,
@@ -69,7 +69,7 @@ const SCMD MainMenu[] = {
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-
+char MagicString[]={"labas"};
 /* CPAL local transfer structures */
 CPAL_TransferTypeDef  sRxStructure, sTxStructure;
 uint8_t tRxBuffer[MAX_BUFF_SIZE];
@@ -234,6 +234,7 @@ void kernel(void)
   uint32_t DevTicksRef1s    = 0;
   uint32_t DevTicksRef2_5s  = 0;
   uint32_t DevTicksRef5s    = 0;
+  uint32_t DevTicksRef10s   = 0;
  
   //__enable_irq(); 
 
@@ -254,9 +255,13 @@ void kernel(void)
         //key->Lock[KEYB_CALIBRATION_INDX] = true;
         //RunCalibrationProcess();
         //CalibrationProcess(&CalibINDX,&CValues);
-        cmd_help();
+        //cmd_help();
         //Menu(MainMenu);
       //}
+      if(IsMagicStr(MagicString)){
+        cmd_help();
+        Menu(MainMenu);
+      }
       
       DevTicksRef100ms = ticks;
     }
@@ -275,12 +280,12 @@ void kernel(void)
       printf("ADC Value0 = %d\r\n",ADC_GetChannelConversionValue(0));
       printf("ADC Value1 = %d\r\n",ADC_GetChannelConversionValue(1));
       printf("ADC Value2 = %d\r\n",ADC_GetChannelConversionValue(2));
-      
       printf("ADC Value3 = %d\r\n",ADC_GetChannelConversionValue(3));
-      
       printf("ADC Value4 = %d\r\n",ADC_GetChannelConversionValue(4));
       printf("ADC Value5 = %d\r\n",ADC_GetChannelConversionValue(5));
       printf("ADC Value6 = %d\r\n",ADC_GetChannelConversionValue(6));
+      
+      printf("\r\nEnter '%s' string to enter the main menu",MagicString);
       //}
       //
     } 
@@ -295,23 +300,24 @@ void kernel(void)
       STM_EVAL_LEDToggle(LED1);
       STM_EVAL_LEDToggle(LED2);
       
-      SetBoardAddress(0x30);//Board nr1
+//      SetBoardAddress(0x30);//Board nr1
       //Read redister
-      tTxBuffer[0] = 0x00;
-      drv_i2c_WriteBuffer(tTxBuffer,1); 
-      drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
+ //     tTxBuffer[0] = 0x00;
+ //     drv_i2c_WriteBuffer(tTxBuffer,1); 
+ //     drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
 
       //Read redister
       tTxBuffer[0] = 0x10;
       drv_i2c_WriteBuffer(tTxBuffer,1); 
       drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
-      
+/*      
       SetBoardAddress(0x35);//Board nr2
       
       //Read redister
       tTxBuffer[0] = 0x10;
       drv_i2c_WriteBuffer(tTxBuffer,1); 
       drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
+*/  
     }
      /* =============================================================
     2,5 sec process
@@ -343,7 +349,33 @@ void kernel(void)
       TxMessage.Data[0] = ++KeyNumber;
       CAN_Transmit(CANx, &TxMessage);
     }
-    //==================================================================     
+    //==================================================================   
+    
+    /* =============================================================
+   10 sec process
+    ================================================================*/
+    if((ticks - DevTicksRef10s) >= 10000){ // 10s 
+      DevTicksRef10s = ticks;
+      // Test calibration command
+      
+      
+#if 0 
+      SetBoardAddress(0x30);
+      //Write redister
+      tTxBuffer[0] = 0x84;
+      tTxBuffer[1] = 0x38;
+      drv_i2c_WriteBuffer(tTxBuffer,2);
+      
+      //Read redister
+/*      tRxBuffer[0] = 0;
+      tTxBuffer[0] = 0x04;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,1,0x04); 
+      printf("%X",tRxBuffer[0]);
+  */    
+#endif
+    }
+    //================================================================== 
   }  
 }
 //====================== End kernel loop ==============================

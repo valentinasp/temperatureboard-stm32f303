@@ -116,7 +116,7 @@ void table(const char *title, const char *mode)
 
 bool cmd_channal1(void){
   clear_screen();
-  CalibrationProcess(Channel1);
+//  CalibrationProcess(Channel1);
   LoadCalibrationData();
   clear_screen();
   printf("Calibration done...Saving value...\r\n");
@@ -126,7 +126,7 @@ bool cmd_channal1(void){
 }
 bool cmd_channal2(void){
   clear_screen();
-  CalibrationProcess(Channel2);
+  //CalibrationProcess(Channel2);
   LoadCalibrationData();
   clear_screen();
   printf("Calibration done...Saving value...\r\n");
@@ -136,7 +136,7 @@ bool cmd_channal2(void){
 }
 bool cmd_channal3(void){
   clear_screen();
-  CalibrationProcess(Channel3);
+  //CalibrationProcess(Channel3);
   LoadCalibrationData();
   clear_screen();
   printf("Calibration done...Saving value...\r\n");
@@ -147,7 +147,7 @@ bool cmd_channal3(void){
 
 bool cmd_channal4(void){
   clear_screen();
-  CalibrationProcess(Channel4);
+  //CalibrationProcess(Channel4);
   LoadCalibrationData();
   clear_screen();
   printf("Calibration done...Saving value...\r\n");

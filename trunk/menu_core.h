@@ -18,6 +18,7 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 void Menu(const SCMD *menu);
+bool IsMagicStr(const char* magic_str);
 /* External variables --------------------------------------------------------*/
 
 #endif  /*__MENIU_CORE_H*/
