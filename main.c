@@ -241,10 +241,12 @@ void kernel(void)
   /* infinite kernel loop */
   for(;;){
     ticks = DevTicks;
-    if((ticks - DevTicksRef10ms) >= 10){
+    /* =============================================================
+     10 msec process 
+    ================================================================*/
+    if((ticks - DevTicksRef10ms) >= 10){// 10ms  
       //KeyScan(); // keyboard scan
-      //key = KeyGet(); // get keyboard values
-      
+      //key = KeyGet(); // get keyboard values    
       DevTicksRef10ms = ticks;     
     } 
     /* =============================================================
