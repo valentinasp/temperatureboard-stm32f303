@@ -9,6 +9,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
 #include <stdint.h>
+#include <stdlib.h> 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MAX_BUFF_SIZE           200
@@ -21,6 +22,9 @@ uint32_t BufferSize = MAX_BUFF_SIZE;
 uint8_t tRxBuffer[MAX_BUFF_SIZE];
 uint8_t tTxBuffer[MAX_BUFF_SIZE];
 int8_t drv_i2c_err = 0;
+
+uint8_t BoardsNr = 0;
+uint8_t *BoardsArray;
 /* Extern variables ----------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 static int8_t drv_i2c_EOT_Wait(void);
@@ -33,6 +37,23 @@ void I2C_GetMagic(uint8_t* nr){
   drv_i2c_WriteBuffer(tTxBuffer,1); 
   drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
   *nr = tRxBuffer[0];
+}
+
+void I2C_ScannBoards(void){
+  uint8_t mnr = 0;
+  BoardsNr = 0;
+  
+  for(size_t i=0;i<127;i++){
+    SetBoardAddress (i);
+    mnr = 0;
+    //try get magic nr
+    I2C_GetMagic(&mnr);
+    if (mnr==0xAB){
+      BoardsNr++;
+      BoardsArray=realloc(BoardsArray,BoardsNr*sizeof(uint8_t));
+      BoardsArray[BoardsNr]=i;
+    }
+  }
 }
 
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd)

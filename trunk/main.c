@@ -180,7 +180,8 @@ int main(void)
   
 /* Start CPAL communication configuration ***********************************/
   InitCPAL();
- //==========================
+  
+  I2C_ScannBoards();
     
 
 #if 0  

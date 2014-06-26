@@ -44,7 +44,7 @@
         <expressions>
           
           
-        <item>str_buffer</item><item>menu[i].val</item><item>magicnr</item><item></item></expressions>
+        <item>str_buffer</item><item>menu[i].val</item><item>magicnr</item><item/></expressions>
         <col-names>
           
           

@@ -108,7 +108,7 @@ void CPAL_I2C_TXTC_UserCallback(CPAL_InitTypeDef* pDevInitStruct)
   */  
 void CPAL_I2C_RXTC_UserCallback(CPAL_InitTypeDef* pDevInitStruct)
 {
-  uint8_t result = 0xFF, i = 0;
+  //uint8_t result = 0xFF, i = 0;
 
   return;
 }
