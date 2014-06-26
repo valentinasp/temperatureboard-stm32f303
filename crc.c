@@ -1,4 +1,4 @@
-/******************** (C) COPYRIGHT 2011 Lifodas *******************************
+/******************** (C) COPYRIGHT 2011 Valentinas Pavlovskis *****************
 * File Name          : crc.c
 * Author             : vpa
 * Version            : V0.0.1
