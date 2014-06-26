@@ -9,7 +9,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
 #include <stdint.h>
+#include "stdio.h"
 #include <stdlib.h> 
+#include "delay.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MAX_BUFF_SIZE           200
@@ -34,6 +36,7 @@ static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd);
 
 void I2C_GetMagic(uint8_t* nr){
   tTxBuffer[0] = 0x00;
+  tRxBuffer[0] = 0x00;
   drv_i2c_WriteBuffer(tTxBuffer,1); 
   drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
   *nr = tRxBuffer[0];
@@ -46,14 +49,24 @@ void I2C_ScannBoards(void){
   for(size_t i=0;i<127;i++){
     SetBoardAddress (i);
     mnr = 0;
+    Delay(5);
     //try get magic nr
     I2C_GetMagic(&mnr);
     if (mnr==0xAB){
       BoardsNr++;
       BoardsArray=realloc(BoardsArray,BoardsNr*sizeof(uint8_t));
-      BoardsArray[BoardsNr]=i;
+      BoardsArray[BoardsNr-1]=i;
     }
   }
+}
+
+void I2C_PrintBoardsList(void){
+  for(size_t i=0;i<BoardsNr;i++){
+    printf("| %d               |       0x%02X          |   Humidity Board              |\r\n",i+1,BoardsArray[i]);
+  }
+}
+uint8_t I2C_GetBoardsNr(void){
+  return BoardsNr;
 }
 
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd)
