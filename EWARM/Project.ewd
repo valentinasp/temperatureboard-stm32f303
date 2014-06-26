@@ -1430,11 +1430,11 @@
         </option>
         <option>
           <name>OCDynDriverList</name>
-          <state>STLINK_ID</state>
+          <state>JLINK_ID</state>
         </option>
         <option>
           <name>OCLastSavedByProductVersion</name>
-          <state>7.10.1.6733</state>
+          <state>7.10.3.6927</state>
         </option>
         <option>
           <name>OCDownloadAttachToProgram</name>
