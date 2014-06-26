@@ -11,7 +11,7 @@ ByteLimit=50
 [JLinkDriver]
 CStepIntDis=_ 0
 [DebugChecksum]
-Checksum=1398118137
+Checksum=-962417394
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -83,7 +83,8 @@ Exclusions=
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Count=0
+Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\main.c}.294.7" 0 0 1 "" 0 "" 0
+Count=1
 [Aliases]
 Count=0
 SuppressDialog=0
