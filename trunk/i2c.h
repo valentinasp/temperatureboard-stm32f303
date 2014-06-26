@@ -32,7 +32,10 @@
 /* Exported functions ------------------------------------------------------- */
 void SetBoardAddress (uint32_t Addr);
 void I2C_GetMagic(uint8_t* nr);
+
 void I2C_ScannBoards(void);
+void I2C_PrintBoardsList(void);
+uint8_t I2C_GetBoardsNr(void);
 /* External variables --------------------------------------------------------*/
 
 
