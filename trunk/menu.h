@@ -41,6 +41,8 @@ bool cmd_channal1(void);
 bool cmd_channal2(void);
 bool cmd_channal3(void);
 bool cmd_channal4(void);
+bool cmd_channal5(void);
+bool cmd_channal6(void);
 
 bool cmd_termcalibration(void);
 bool cmd_calibrationboards(void);
@@ -50,6 +52,11 @@ bool cmd_board1(void);
 bool cmd_board2(void);
 bool cmd_board3(void);
 bool cmd_board4(void);
+
+bool cmd_hchannal1(void);
+bool cmd_hchannal2(void);
+bool cmd_hchannal3(void);
+bool cmd_hchannal4(void);
 
 #endif  /*__MENIU_H*/
 
