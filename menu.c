@@ -27,6 +27,14 @@ const SCMD ChannelMenu[] = {
    NULL,NULL
 };
 
+const SCMD HChannelMenu[] = {
+   "1",cmd_hchannal1,
+   "2",cmd_hchannal2,
+   "3",cmd_hchannal3,
+   "4",cmd_hchannal4,
+   NULL,NULL
+};
+
 SCMD BoardMenu[] = {
    "1",cmd_board1,
    "2",cmd_board2,
@@ -111,27 +119,31 @@ bool cmd_calibrationboards(void){
 
 bool cmd_board1(void){
   clear_screen();
-  printf("Calibration b1\r\n");
-  Delay(3000);
+  SelectBoardNr(0);
+  printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
+  Menu(HChannelMenu); 
   return false;
 }
 
 bool cmd_board2(void){
   clear_screen();
-  printf("Calibration b2\r\n");
-  Delay(3000);
+  SelectBoardNr(1);
+  printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
+  Menu(HChannelMenu); 
   return false;
 }
 bool cmd_board3(void){
   clear_screen();
-  printf("Calibration b3\r\n");
-  Delay(3000);
+  SelectBoardNr(2);
+  printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
+  Menu(HChannelMenu); 
   return false;
 }
 bool cmd_board4(void){
   clear_screen();
-  printf("Calibration b4\r\n");
-  Delay(3000);
+  SelectBoardNr(3);
+  printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
+  Menu(HChannelMenu); 
   return false;
 }
 
@@ -236,6 +248,58 @@ bool cmd_channal4(void){
   clear_screen();
   //CalibrationProcess(Channel4);
   LoadCalibrationData();
+  clear_screen();
+  printf("Calibration done...Saving value...\r\n");
+  Delay(3000);
+  cmd_help();
+  return false;
+}
+
+bool cmd_channal5(void){
+  clear_screen();
+  //CalibrationProcess(Channel5);
+  LoadCalibrationData();
+  clear_screen();
+  printf("Calibration done...Saving value...\r\n");
+  Delay(3000);
+  cmd_help();
+  return false;
+}
+
+bool cmd_channal6(void){
+  clear_screen();
+  //CalibrationProcess(Channel6);
+  LoadCalibrationData();
+  clear_screen();
+  printf("Calibration done...Saving value...\r\n");
+  Delay(3000);
+  cmd_help();
+  return false;
+}
+//-------------------------------------------------
+bool cmd_hchannal1(void){
+  clear_screen();
+  printf("Calibration done...Saving value...\r\n");
+  Delay(3000);
+  cmd_help();
+  return false;
+}
+bool cmd_hchannal2(void){
+  clear_screen();
+  printf("Calibration done...Saving value...\r\n");
+  Delay(3000);
+  cmd_help();
+  return false;
+}
+bool cmd_hchannal3(void){
+  clear_screen();
+  printf("Calibration done...Saving value...\r\n");
+  Delay(3000);
+  cmd_help();
+  return false;
+}
+
+bool cmd_hchannal4(void){
   clear_screen();
   printf("Calibration done...Saving value...\r\n");
   Delay(3000);

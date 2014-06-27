@@ -27,6 +27,8 @@ int8_t drv_i2c_err = 0;
 
 uint8_t BoardsNr = 0;
 uint8_t *BoardsArray;
+
+uint8_t SelectedBoard = 0;
 /* Extern variables ----------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 static int8_t drv_i2c_EOT_Wait(void);
@@ -40,6 +42,10 @@ void I2C_GetMagic(uint8_t* nr){
   drv_i2c_WriteBuffer(tTxBuffer,1); 
   drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
   *nr = tRxBuffer[0];
+}
+
+void SelectBoardNr(uint8_t nr){
+  SelectedBoard = nr;
 }
 
 void I2C_ScannBoards(void){
