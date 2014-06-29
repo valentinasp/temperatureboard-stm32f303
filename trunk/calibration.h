@@ -53,7 +53,8 @@
 /* Read sCalibration start bit */   
 #define IOCALIB_PIN()          GPIO_ReadInputDataBit(CALIBRATION_PORT, CALIBRATION_PIN)
 
-#define MAXCHANNEL 4
+#define MAXHCHANNEL 4
+#define MAXTCHANNEL 6
 #define MAXPOINTS 2 //0,100 gradus
 
 #pragma pack (push, 1)
@@ -69,7 +70,9 @@ typedef enum {
               Channel1=0,
               Channel2,
               Channel3,
-              Channel4
+              Channel4,
+              Channel5,
+              Channel6
 } channel_t;
 
 /* Exported functions ------------------------------------------------------- */
@@ -87,8 +90,11 @@ bool EraseCalibration(void);
 // Function set and invert generator value
 void SetGenerator(bool *value);
 
+void HCalibrationProcess(channel_t Channal);
+
 /* External variables --------------------------------------------------------*/
-extern CalibrationTypeDef CalibrationValues[4];
+extern CalibrationTypeDef CalibrationValues[MAXTCHANNEL];
+
 
 
 #endif  /*__CALIBRATION_H*/
