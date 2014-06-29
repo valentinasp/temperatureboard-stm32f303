@@ -12,6 +12,7 @@
 #include "stdio.h"
 #include <stdlib.h> 
 #include "delay.h"
+#include "string.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MAX_BUFF_SIZE           200
@@ -30,50 +31,13 @@ uint8_t *BoardsArray;
 
 uint8_t SelectedBoard = 0;
 /* Extern variables ----------------------------------------------------------*/
+
 /* Private function prototypes -----------------------------------------------*/
 static int8_t drv_i2c_EOT_Wait(void);
 static int8_t drv_i2c_WriteBuffer(const uint8_t *Data, uint16_t DataLength);
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd);
+
 /* Private functions ---------------------------------------------------------*/
-
-void I2C_GetMagic(uint8_t* nr){
-  tTxBuffer[0] = 0x00;
-  tRxBuffer[0] = 0x00;
-  drv_i2c_WriteBuffer(tTxBuffer,1); 
-  drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
-  *nr = tRxBuffer[0];
-}
-
-void SelectBoardNr(uint8_t nr){
-  SelectedBoard = nr;
-}
-
-void I2C_ScannBoards(void){
-  uint8_t mnr = 0;
-  BoardsNr = 0;
-  
-  for(size_t i=0;i<127;i++){
-    SetBoardAddress (i);
-    mnr = 0;
-    Delay(5);
-    //try get magic nr
-    I2C_GetMagic(&mnr);
-    if (mnr==0xAB){
-      BoardsNr++;
-      BoardsArray=realloc(BoardsArray,BoardsNr*sizeof(uint8_t));
-      BoardsArray[BoardsNr-1]=i;
-    }
-  }
-}
-
-void I2C_PrintBoardsList(void){
-  for(size_t i=0;i<BoardsNr;i++){
-    printf("| %d               |       0x%02X          |   Humidity Board              |\r\n",i+1,BoardsArray[i]);
-  }
-}
-uint8_t I2C_GetBoardsNr(void){
-  return BoardsNr;
-}
 
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd)
 {
@@ -200,4 +164,86 @@ void InitCPAL(void){
 void SetBoardAddress (uint32_t Addr){
   sTxStructure.wAddr1=Addr;
   sRxStructure.wAddr1=Addr;
+}
+
+
+//==================   I2C Utilites ============================================
+void I2C_GetMagic(uint8_t* nr){
+  tTxBuffer[0] = REG_MAGICREG;
+  tRxBuffer[0] = 0x00;
+  drv_i2c_WriteBuffer(tTxBuffer,1); 
+  drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
+  *nr = tRxBuffer[0];
+}
+
+
+void SelectBoardNr(uint8_t nr){
+  SelectedBoard = nr;
+  SetBoardAddress(BoardsArray[SelectedBoard]);
+}
+
+void I2C_ScannBoards(void){
+  uint8_t mnr = 0;
+  BoardsNr = 0;
+  
+  for(size_t i=0;i<127;i++){
+    SetBoardAddress (i);
+    mnr = 0;
+    Delay(5);
+    //try get magic nr
+    I2C_GetMagic(&mnr);
+    if (mnr==0xAB){
+      BoardsNr++;
+      BoardsArray=realloc(BoardsArray,BoardsNr*sizeof(uint8_t));
+      BoardsArray[BoardsNr-1]=i;
+    }
+  }
+}
+
+void I2C_PrintBoardsList(void){
+  for(size_t i=0;i<BoardsNr;i++){
+    printf("| %d               |       0x%02X          |   Humidity Board              |\r\n",i+1,BoardsArray[i]);
+  }
+}
+uint8_t I2C_GetBoardsNr(void){
+  return BoardsNr;
+}
+
+void SaveHCalibrationPoint(uint8_t channel,uint8_t cpoint){
+  //Write register
+  tTxBuffer[0] = (REG_CONTROLREG|0x80);
+  tTxBuffer[1] = ((channel<<4)|cpoint);
+  drv_i2c_WriteBuffer(tTxBuffer,2);
+}
+
+uint16_t GetADCValue(channel_t Channal){
+  uint16_t retval = 0;
+  memset(tRxBuffer,0,sizeof(uint16_t));
+  switch (Channal){
+    case Channel1:
+      tTxBuffer[0] = REG_ADC0VALUEREG;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,2,REG_ADC0VALUEREG);
+      break;
+    case Channel2:
+      tTxBuffer[0] = REG_ADC1VALUEREG;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,2,REG_ADC1VALUEREG);
+      break;
+    case Channel3:
+      tTxBuffer[0] = REG_ADC2VALUEREG;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,2,REG_ADC2VALUEREG);
+      break;
+    case Channel4:
+      tTxBuffer[0] = REG_ADC3VALUEREG;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,2,REG_ADC3VALUEREG);
+      break;
+  }
+  
+  retval = (uint16_t)tRxBuffer[1];
+  retval = (retval<<8);
+  retval |= (uint16_t)tRxBuffer[0];
+  return retval;
 }

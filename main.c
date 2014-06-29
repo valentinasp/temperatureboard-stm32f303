@@ -290,12 +290,12 @@ void kernel(void)
       STM_EVAL_LEDToggle(LED1);
       STM_EVAL_LEDToggle(LED2);
       
-      SetBoardAddress(0x30);//Board nr1
+//      SetBoardAddress(0x30);//Board nr1
       //Read redister
-      I2C_GetMagic(&magicnr);
- //     tTxBuffer[0] = 0x00;
- //     drv_i2c_WriteBuffer(tTxBuffer,1); 
- //     drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
+//      I2C_GetMagic(&magicnr);
+//     tTxBuffer[0] = 0x00;
+//     drv_i2c_WriteBuffer(tTxBuffer,1); 
+//     drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
 
       //Read redister
 //      tTxBuffer[0] = 0x10;
@@ -352,18 +352,17 @@ void kernel(void)
       
 #if 0 
       SetBoardAddress(0x30);
-      //Write redister
+      //Write register
       tTxBuffer[0] = 0x84;
       tTxBuffer[1] = 0x38;
       drv_i2c_WriteBuffer(tTxBuffer,2);
       
-      //Read redister
-/*      tRxBuffer[0] = 0;
+      //Read register
+      tRxBuffer[0] = 0;
       tTxBuffer[0] = 0x04;
       drv_i2c_WriteBuffer(tTxBuffer,1); 
       drv_i2c_ReadBuffer(tRxBuffer,1,0x04); 
       printf("%X",tRxBuffer[0]);
-  */    
 #endif
     }
     //================================================================== 

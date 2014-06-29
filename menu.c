@@ -218,7 +218,7 @@ bool cmd_channal1(void){
 //  CalibrationProcess(Channel1);
   LoadCalibrationData();
   clear_screen();
-  printf("Calibration done...Saving value...\r\n");
+  printf("\r\nCalibration done...Saving value...\r\n");
   Delay(3000);
   cmd_help();
   return false;
@@ -228,7 +228,7 @@ bool cmd_channal2(void){
   //CalibrationProcess(Channel2);
   LoadCalibrationData();
   clear_screen();
-  printf("Calibration done...Saving value...\r\n");
+  printf("\r\nCalibration done...Saving value...\r\n");
   Delay(3000);
   cmd_help();
   return false;
@@ -279,21 +279,24 @@ bool cmd_channal6(void){
 //-------------------------------------------------
 bool cmd_hchannal1(void){
   clear_screen();
-  printf("Calibration done...Saving value...\r\n");
+  HCalibrationProcess(Channel1);
+  printf("\r\nCalibration done...\r\n");
   Delay(3000);
   cmd_help();
   return false;
 }
 bool cmd_hchannal2(void){
   clear_screen();
-  printf("Calibration done...Saving value...\r\n");
+  HCalibrationProcess(Channel2);
+  printf("\r\nCalibration done...\r\n");
   Delay(3000);
   cmd_help();
   return false;
 }
 bool cmd_hchannal3(void){
   clear_screen();
-  printf("Calibration done...Saving value...\r\n");
+  HCalibrationProcess(Channel3);
+  printf("\r\nCalibration done...\r\n");
   Delay(3000);
   cmd_help();
   return false;
@@ -301,7 +304,8 @@ bool cmd_hchannal3(void){
 
 bool cmd_hchannal4(void){
   clear_screen();
-  printf("Calibration done...Saving value...\r\n");
+  HCalibrationProcess(Channel4);
+  printf("\r\nCalibration done...\r\n");
   Delay(3000);
   cmd_help();
   return false;
