@@ -32,6 +32,7 @@
 #include "stdio.h"
 #include "adc.h" 
 #include "menu_core.h" 
+#include "menu.h"
 #include "stm32f30x_it.h"
 #include "i2c.h"
 
@@ -48,10 +49,10 @@ const SCMD MainMenu[] = {
    "INFO",   cmd_bootinfo,
    "ERASE",  cmd_erase_calibration,
    "RUNCAL", cmd_run_calibration,
-   "SETID",  cmd_setboard_id,
+   "VIEW",   cmd_view,
    "?",      cmd_help,
-   "EXIT", cmd_exit,
-    NULL,  NULL
+   "EXIT",   cmd_exit,
+    NULL,    NULL
 };
 /* Private define ------------------------------------------------------------*/
 #define KEY_PRESSED     0x00

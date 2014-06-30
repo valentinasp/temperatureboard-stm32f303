@@ -12,6 +12,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "type.h"
+#include "stdio.h"
 /* Exported types ------------------------------------------------------------*/
 
 /* Command definitions structure. */
@@ -27,13 +28,10 @@ typedef struct {//scmd {
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 /* External variables --------------------------------------------------------*/
-
-
-
 bool cmd_bootinfo(void);
 bool cmd_erase_calibration(void);
 bool cmd_run_calibration(void);
-bool cmd_setboard_id(void);
+bool cmd_view(void);
 bool cmd_help(void);
 bool cmd_exit(void);
 
@@ -57,6 +55,9 @@ bool cmd_hchannal1(void);
 bool cmd_hchannal2(void);
 bool cmd_hchannal3(void);
 bool cmd_hchannal4(void);
+
+/* Exported typedef -----------------------------------------------------------*/
+
 
 #endif  /*__MENIU_H*/
 

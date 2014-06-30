@@ -14,9 +14,20 @@
 #include "delay.h"
 #include "i2c.h"
 /* Private typedef -----------------------------------------------------------*/
+typedef enum {
+   main_Not = 0,
+   main_Info,
+   main_ErCalibration,
+   main_Calibration,
+   main_View,
+   main_Help,
+   main_Exit
+}MainMenuItem_t;
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+static MainMenuItem_t CurrentMainMenuItem = main_Not;
+
 const SCMD ChannelMenu[] = {
    "1",cmd_channal1,
    "2",cmd_channal2,
@@ -60,7 +71,7 @@ static const char help[] =
    "| INFO                      | Display version and sertification         |\r\n"
    "| ERASE                     | Erase calibration values                  |\r\n"
    "| RUNCAL                    | Run calibration application               |\r\n"
-   "| SETID                     | Selectiong board using board ID number    |\r\n"
+   "| VIEW                      | View I2C boards sensors                   |\r\n"
    "| ?                         | Print commands inro (help)                |\r\n"
    "| EXIT                      | Exit from main meniu                      |\r\n"
    "+---------------------------+-------------------------------------------+\r\n";
@@ -88,6 +99,7 @@ static const char board_tag[] =
 
 /* Extern variables ----------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+static void SetBoard(uint8_t boardIdx);
 /* Private functions ---------------------------------------------------------*/
 static void clear_screen(void);
 void table(const char *title, const char *mode);//color test
@@ -100,10 +112,21 @@ bool cmd_bootinfo(void){
   return false;
 }
 
+bool cmd_view(void){
+  MainMenuItem_t oldItem = CurrentMainMenuItem;
+  CurrentMainMenuItem = main_Calibration;
+  cmd_calibrationboards();
+  CurrentMainMenuItem = oldItem;
+  return true;
+}
+
 bool cmd_run_calibration(void){
+  MainMenuItem_t oldItem = CurrentMainMenuItem;
+  CurrentMainMenuItem = main_Calibration;
   clear_screen();
   printf(select_calibration);
   Menu(CalibMenu);      
+  CurrentMainMenuItem = oldItem;
   return true;
 }
 
@@ -118,33 +141,32 @@ bool cmd_calibrationboards(void){
 }
 
 bool cmd_board1(void){
-  clear_screen();
-  SelectBoardNr(0);
-  printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
-  Menu(HChannelMenu); 
+  SetBoard(0);
   return false;
 }
 
 bool cmd_board2(void){
-  clear_screen();
-  SelectBoardNr(1);
-  printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
-  Menu(HChannelMenu); 
+  SetBoard(1);
   return false;
 }
 bool cmd_board3(void){
-  clear_screen();
-  SelectBoardNr(2);
-  printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
-  Menu(HChannelMenu); 
+  SetBoard(2);
   return false;
 }
 bool cmd_board4(void){
-  clear_screen();
-  SelectBoardNr(3);
-  printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
-  Menu(HChannelMenu); 
+  SetBoard(3);
   return false;
+}
+
+static void SetBoard(uint8_t boardIdx){
+  clear_screen();
+  SelectBoardNr(boardIdx);
+  if(CurrentMainMenuItem == main_Calibration){
+    printf("\r\nCalibration process is start.\r\nPlease select a channel (1..4) \r\n");
+    Menu(HChannelMenu);
+  }else{
+    I2C_ViewSensorsProcess();
+  }
 }
 
 bool cmd_back(void){
@@ -193,10 +215,6 @@ bool cmd_termcalibration(void){
   return true;
 }
 
-bool cmd_setboard_id(void){
-  
-  return true;
-}
 
 void table(const char *title, const char *mode)
 {

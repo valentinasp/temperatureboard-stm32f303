@@ -65,6 +65,9 @@ void SelectBoardNr(uint8_t nr);
 
 void SaveHCalibrationPoint(uint8_t channel,uint8_t cpoint);
 uint16_t GetADCValue(channel_t Channal);
+uint16_t GetHumidityValue(channel_t Channal);
+
+void I2C_ViewSensorsProcess(void);
 /* External variables --------------------------------------------------------*/
 
 
