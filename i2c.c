@@ -13,6 +13,9 @@
 #include <stdlib.h> 
 #include "delay.h"
 #include "string.h"
+#include "stm32f30x_it.h"
+#include "serial.h"
+#include "utils.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MAX_BUFF_SIZE           200
@@ -246,4 +249,124 @@ uint16_t GetADCValue(channel_t Channal){
   retval = (retval<<8);
   retval |= (uint16_t)tRxBuffer[0];
   return retval;
+}
+
+uint16_t GetHumidityValue(channel_t Channal){
+  uint16_t retval = 0;
+  memset(tRxBuffer,0,sizeof(uint16_t));
+  switch (Channal){
+    case Channel1:
+      tTxBuffer[0] = REG_HUMIDITY0REG;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,2,REG_HUMIDITY0REG);
+      break;
+    case Channel2:
+      tTxBuffer[0] = REG_HUMIDITY1REG;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,2,REG_HUMIDITY1REG);
+      break;
+    case Channel3:
+      tTxBuffer[0] = REG_HUMIDITY2REG;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,2,REG_HUMIDITY2REG);
+      break;
+    case Channel4:
+      tTxBuffer[0] = REG_HUMIDITY3REG;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,2,REG_HUMIDITY3REG);
+      break;
+    default:
+      break;
+  }
+  
+  retval = (uint16_t)tRxBuffer[1];
+  retval = (retval<<8);
+  retval |= (uint16_t)tRxBuffer[0];
+  return retval;
+}
+
+void I2C_ViewSensorsProcess(void){
+  uint32_t ticks;
+  uint32_t DevTicksRef100ms = 0; 
+  uint32_t DevTicksRef10ms  = 0; 
+  uint32_t DevTicksRef500ms = 0;
+  uint32_t DevTicksRef1s    = 0;
+  uint32_t DevTicksRef2_5s  = 0;
+  uint32_t DevTicksRef5s    = 0;
+  channel_t Channal = Channel1;
+  char KeyPressed = 0;
+  //unsigned int CurrADCValues[MAXHCHANNEL];
+  unsigned int CurrHumidityValues[MAXHCHANNEL];
+  //float CurrVoltage = 0;
+  
+  do
+  {
+      ticks = DevTicks;
+      if((ticks - DevTicksRef10ms) >= 10){
+        KeyPressed=get_char();
+        DevTicksRef10ms = ticks;     
+      } 
+      /* =============================================================
+       100 msec process 
+      ================================================================*/
+      if((ticks - DevTicksRef100ms) >= 100){ // 100ms   
+        DevTicksRef100ms = ticks;
+      }
+      
+      /* =============================================================
+       500 msec process 
+      ================================================================*/
+      if((ticks - DevTicksRef500ms) >= 500){ // 500 msec
+        DevTicksRef500ms = ticks;
+        //=======redraw calibration window heder==========
+        printf("\x1b[2J");//terminal clear screen command
+        
+        printf("\r\nSelected board address 0x%02X\r\n",BoardsArray[SelectedBoard]);
+        for(size_t i=0;i<MAXHCHANNEL;i++){
+          printf("\r\nChannal %d: %d%%",i+1,CurrHumidityValues[Channal]);
+        }
+        printf("\r\nPress \"Enter\" to exit\r\n");
+        //=======redraw calibration window heder===========
+      } 
+      
+      /* =============================================================
+      1 sec process
+      ================================================================*/
+      if((ticks - DevTicksRef1s) >= 1000){ // 1s      
+        DevTicksRef1s = ticks;
+        CurrHumidityValues[Channal] = GetHumidityValue(Channal);
+        switch (Channal){
+          case Channel1:
+            Channal = Channel2;
+            break;
+          case Channel2:
+            Channal = Channel3;
+            break;
+          case Channel3:
+            Channal = Channel4;
+            break;
+          case Channel4:
+            Channal = Channel1;
+            break;
+        } 
+
+      }
+      /* =============================================================
+      2,5 sec process
+      ================================================================*/
+      if((ticks - DevTicksRef2_5s) >= 2500){ // 2,5 s      
+        DevTicksRef2_5s = ticks;  
+        //CurrADCValues[Channal] = GetADCValue(Channal);
+        //CurrVoltage = (float)(CurrADCValues[Channal]*0.80586);
+        //CurrVoltage = CurrVoltage/1000;
+      }
+      /* =============================================================
+      5 sec process
+      ================================================================*/
+      if((ticks - DevTicksRef5s) >= 5000){ // 5s 
+        DevTicksRef5s = ticks;
+      }
+      //==================================================================     
+  }while(KeyPressed!=CR);
+       
 }
