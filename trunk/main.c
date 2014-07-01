@@ -289,7 +289,7 @@ void kernel(void)
     if((ticks - DevTicksRef1s) >= 1000){ // 1s      
       DevTicksRef1s = ticks;
       
-      AnalogInput(0,GetHumidityValue(Channel1));
+ //     AnalogInput(0,GetHumidityValue(Channel1));
       
       //TestProg();
       STM_EVAL_LEDToggle(LED1);

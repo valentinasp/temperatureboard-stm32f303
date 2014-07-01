@@ -175,9 +175,9 @@ void SetBoardAddress (uint32_t Addr){
 void I2C_GetMagic(uint8_t* nr){
   int8_t err = 0;
   tTxBuffer[0] = REG_MAGICREG;
+  err = drv_i2c_WriteBuffer(tTxBuffer,1);
   tRxBuffer[0] = 0x00;
-  err = drv_i2c_WriteBuffer(tTxBuffer,1); 
-  err = drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
+  err = drv_i2c_ReadBuffer(tRxBuffer,1,REG_MAGICREG);
   *nr = tRxBuffer[0];
 }
 
@@ -191,7 +191,8 @@ void I2C_ScannBoards(void){
   uint8_t mnr = 0;
   BoardsNr = 0;
   
-  for(size_t i=0;i<127;i++){
+  for(size_t i=0;i<254;i++){
+    if(i&0x01) continue;
     SetBoardAddress (i);
     mnr = 0;
     Delay(10);
