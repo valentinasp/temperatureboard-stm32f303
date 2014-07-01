@@ -35,7 +35,8 @@
 #include "menu.h"
 #include "stm32f30x_it.h"
 #include "i2c.h"
-
+#include "drv_can_open.h"
+#include "drv_stm32_can.h"
 /** @addtogroup STM32F30x_StdPeriph_Examples
   * @{
   */
@@ -175,6 +176,8 @@ int main(void)
    
   /* CAN configuration */
   CAN_Config();
+  Init_RecordTable();
+  SystemStateChange(0);
   
   
 /* Start CPAL communication configuration ***********************************/
@@ -182,6 +185,7 @@ int main(void)
   
   I2C_ScannBoards();
     
+  SetBoardAddress(0x01);
 
 #if 0  
   while(1)
@@ -285,6 +289,8 @@ void kernel(void)
     if((ticks - DevTicksRef1s) >= 1000){ // 1s      
       DevTicksRef1s = ticks;
       
+      AnalogInput(0,GetHumidityValue(Channel1));
+      
       //TestProg();
       STM_EVAL_LEDToggle(LED1);
       STM_EVAL_LEDToggle(LED2);
@@ -329,15 +335,38 @@ void kernel(void)
       SetGenerator(&GeneratorVal);
       */
     }
+    
+    CAN_MESSAGE msg;
+    if(ReceiveCanMsg(&msg)){ 
+      printf("\n\rCAN %x %x %x",msg.Id,msg.len,msg.data[0]);
+      CanOpenProtocol(&msg);
+    //for(;;);  
+    }
+    
     /* =============================================================
     5 sec process
     ================================================================*/
     if((ticks - DevTicksRef5s) >= 5000){ // 5s 
+      CAN_MESSAGE msg;
       DevTicksRef5s = ticks;
-      
+      msg.Id= 0x134;
+      msg.len = 3;
+      msg.data[0] = 0x11;
+      msg.data[1] = 0x22;
+      msg.data[2] = 0x33;
+       SendCanMsg(&msg);
+       msg.data[2] = 0x44;
+       SendCanMsg(&msg);
+       msg.data[2] = 0x55;
+       SendCanMsg(&msg);
+       msg.data[2] = 0x66;
+       SendCanMsg(&msg);
+       msg.data[2] = 0x77;
+       SendCanMsg(&msg);
       //STM_HEATING_Toggle();
-      TxMessage.Data[0] = ++KeyNumber;
-      CAN_Transmit(CANx, &TxMessage);
+      //TxMessage.Data[0] = ++KeyNumber;
+      //CAN_Transmit(CANx, &TxMessage);
+      
     }
     //==================================================================   
     
@@ -495,6 +524,9 @@ static void CAN_Config(void)
   
   /* Enable FIFO 0 message pending Interrupt */
   CAN_ITConfig(CANx, CAN_IT_FMP0, ENABLE);
+  
+  
+  Init_CanIrq();
 }
 
 /**

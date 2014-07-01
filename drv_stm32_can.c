@@ -1,4 +1,4 @@
-#include "stm32f30x.h"
+#include <stm32f30x.h> 
 #include "drv_can_open.h"
 #include "drv_stm32_can.h"
 
@@ -7,7 +7,7 @@ static void CAN_hw_rd (CAN_MESSAGE *msg);
 
 
 CAN_MESSAGE  Can1RxBuf[CAN1_RX_BUF_SIZE],Can1TxBuf[CAN1_TX_BUF_SIZE];
-volatile unsigned int Can1_RxIn,Can1_RxOut,Can1_TxIn,Can1_TxOut,Can1Status;
+unsigned int Can1_RxIn,Can1_RxOut,Can1_TxIn,Can1_TxOut,Can1Status;
 
 
 // leisti trukius
@@ -17,16 +17,16 @@ void Init_CanIrq(void)
     
     CAN1->IER = ((1 << 1) | (1 << 0));
     /* Enable CAN1 interrupts */
-//    NVIC_SetPriority (CAN1_TX_IRQn,  1);
-//    NVIC_SetPriority (CAN1_RX0_IRQn, 1);
+    NVIC_SetPriority (USB_HP_CAN1_TX_IRQn,  1);
+    NVIC_SetPriority (USB_LP_CAN1_RX0_IRQn, 1);
     
-//    NVIC_EnableIRQ   (CAN1_TX_IRQn);
-//    NVIC_EnableIRQ   (CAN1_RX0_IRQn);
+    NVIC_EnableIRQ   (USB_HP_CAN1_TX_IRQn);
+    NVIC_EnableIRQ   (USB_LP_CAN1_RX0_IRQn);
 }
 
 
 // tx irq
-void CAN1_TX_IRQHandler (void) 
+void USB_HP_CAN1_TX_IRQHandler (void) 
 {
     if(Can1_TxIn != Can1_TxOut)
     {
@@ -46,7 +46,7 @@ void CAN1_TX_IRQHandler (void)
 }
 
 // rx irq
-void CAN1_RX0_IRQHandler (void) 
+void USB_LP_CAN1_RX0_IRQHandler (void) 
 {
      volatile unsigned int temp;
     
@@ -147,7 +147,7 @@ static unsigned int CAN_hw_wr(CAN_MESSAGE *msg)
     CAN1->sTxMailBox[0].TDTR &= ~0x0000000F;
     CAN1->sTxMailBox[0].TDTR |=  ((unsigned int)msg->len & 0x0000000F);
 
-    CAN1->IER |= (1 << 0);  //  enable  TME interrupt 
+    //CAN1->IER |= (1 << 0);  //  enable  TME interrupt 
 
     //  transmit message                
     CAN1->sTxMailBox[0].TIR  |=  (1 << 0);   //   set TXRQ bit 
@@ -170,6 +170,8 @@ void SendCanMsg(CAN_MESSAGE *msg )
         if(temp >= CAN1_TX_BUF_SIZE) temp = 0;
         if(temp == Can1_TxOut) Can1Status |= CAN_TX_SOFT_OVERFLOW;
         else Can1_TxIn = temp;
+        CAN1->IER |= (1 << 0);  //  enable  TME interrupt 
+
     }
 }
 

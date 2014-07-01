@@ -237,8 +237,8 @@ static unsigned short TableWrite(unsigned short adr, RECORD_TYPE val, unsigned c
                 //if(adr == 0x0501) RecordGuardTime = val;
                 if(adr == 0x0502) GuardTimer = 0;               // centrinio valdiklio veikimo sekimas 
                 if(adr == 0x0400)                               // SystemState?
-                {
-                    SystemStateChange(val);
+                { 
+                    if(flag == 0) SystemStateChange(val);
                     GuardTimer = 0;
                 }
                // if((adr == 0x1004))                             // periodinio iejimu siuntimo nustatymas
@@ -708,11 +708,24 @@ void CanOpenTimer(void)
 // irenginio busenos keitimas
 //----------------------------------------------------------------------------------------------
 void SystemStateChange(RECORD_TYPE val)
-{         
-    if(val == 0) SystemState = SYS_STATE_INIT;
+{  
+    CAN_MESSAGE msg;    
+    if(val == 0) 
+    {
+        SystemState = SYS_STATE_INIT;
+        TableWrite(0x0200, 0x0001, 1); // starto statusas
+        TableWrite(0x0300, 0x0000, 1); // klaidos kodas
+        TableWrite(0x0400, 0x0001, 1); 
+        
+        ReadToCanMsg(0x0200,&msg);
+        SendCanMsg(&msg);
+        ReadToCanMsg(0x0400,&msg);
+        SendCanMsg(&msg);
+    }
     if(val == 2) 
     {
         SystemState = SYS_STATE_OPERATIONAL;
+        TableWrite(0x0400, 0x0002, 1); 
         #if DIGITAL_OUTPUT_BLOCKS>0
             UpdateDigitalOutputs();
         #endif
@@ -723,6 +736,7 @@ void SystemStateChange(RECORD_TYPE val)
     if(val == 3) 
     {
         SystemState = SYS_STATE_STOPPED;
+        TableWrite(0x0400, 0x0003, 1); 
         #if DIGITAL_OUTPUT_BLOCKS>0
             ClearOutputs(0, 0xFFFFFFFF);
         #endif
@@ -739,6 +753,7 @@ void SystemStateChange(RECORD_TYPE val)
     if(val == 4) 
     {
         SystemState = SYS_STATE_ERROR;
+        TableWrite(0x0400, 0x0004, 1); 
         #if DIGITAL_OUTPUT_BLOCKS>0
             ClearOutputs(0, 0xFFFFFFFF);
         #endif
