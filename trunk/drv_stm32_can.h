@@ -8,3 +8,4 @@
 
 void SendCanMsg(CAN_MESSAGE *msg );
 unsigned int ReceiveCanMsg(CAN_MESSAGE *msg);
+void Init_CanIrq(void);

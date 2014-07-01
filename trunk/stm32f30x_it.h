@@ -50,7 +50,7 @@ void SVC_Handler(void);
 void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
-void USB_LP_CAN1_RX0_IRQHandler(void);
+//void USB_LP_CAN1_RX0_IRQHandler(void);
 void USART1_IRQHandler(void);
 
 #define RXBUFFERSIZE   0x01

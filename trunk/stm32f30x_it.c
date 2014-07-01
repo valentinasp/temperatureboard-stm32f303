@@ -211,7 +211,7 @@ void USART1_IRQHandler(void)
   * @param  None
   * @retval None
   */
-void USB_LP_CAN1_RX0_IRQHandler(void)
+/*void USB_LP_CAN1_RX0_IRQHandler(void)
 {
   CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);
   
@@ -220,7 +220,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
     //Number = RxMessage.Data[0];
   }
 }
-
+*/
 /**
   * @brief  This function handles PPP interrupt request.
   * @param  None
