@@ -114,9 +114,11 @@ bool cmd_bootinfo(void){
 
 bool cmd_view(void){
   MainMenuItem_t oldItem = CurrentMainMenuItem;
-  CurrentMainMenuItem = main_Calibration;
+  CurrentMainMenuItem = main_View;
   cmd_calibrationboards();
   CurrentMainMenuItem = oldItem;
+  clear_screen();
+  cmd_help();
   return true;
 }
 

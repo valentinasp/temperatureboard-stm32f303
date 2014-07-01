@@ -11,8 +11,8 @@
 #define __DELAY_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f30x.h"
 #include <cstring>
+#include "stm32f30x.h"
 #include "type.h"
 
 #ifdef __cplusplus

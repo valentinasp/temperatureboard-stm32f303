@@ -9,6 +9,8 @@
 /* Includes ------------------------------------------------------------------*/
 //#include "flash_if.h"
 #include "calibration.h"
+#include "interpolation.h"
+#include "delay.h"
 #include "crc.h"
 #include "eeprom.h"
 #include "i2c.h"
@@ -16,7 +18,6 @@
 //#include "ADCmeasurement.h"
 #include "serial.h"//only for test
 #include "utils.h"
-#include "interpolation.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef enum {
@@ -239,14 +240,6 @@ void HCalibrationProcess(channel_t Channal){//(uint16_t* CalibValuesINDX,Calibra
         ================================================================*/
         if((ticks - DevTicksRef2_5s) >= 2500){ // 2,5 s      
           DevTicksRef2_5s = ticks;
-          
-          //if(GeneratorVal){
-            //GetADCValues(tempADCValues2,sizeof(tempADCValues2)/sizeof(tempADCValues2[0]));
-          //}else{
-            //GetADCValues(tempADCValues1,sizeof(tempADCValues1)/sizeof(tempADCValues1[0]));
-          //}
-          
-          //CurrADCValues[Channal] = (tempADCValues1[Channal]+tempADCValues2[Channal])/2;
           CurrADCValues[Channal] = GetADCValue(Channal);
           CurrVoltage = (float)(CurrADCValues[Channal]*0.80586);
           CurrVoltage = CurrVoltage/1000;
@@ -265,39 +258,57 @@ void HCalibrationProcess(channel_t Channal){//(uint16_t* CalibValuesINDX,Calibra
      switch (State)
      {  
         case stWaitingForValue8:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp8procent);
+          Delay(15);
           State=stWaitingForValue10;
           break;
         case stWaitingForValue10:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp10procent);
+          Delay(15);
           State=stWaitingForValue14;
           break;
         case stWaitingForValue14:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp14procent);
+          Delay(15);
           State=stWaitingForValue18;
           break;
         case stWaitingForValue18:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp18procent);
+          Delay(15);
           State=stWaitingForValue24;
           break;
         case stWaitingForValue24:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp24procent);
+          Delay(15);
           State=stWaitingForValue30;
           break;
         case stWaitingForValue30:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp30procent);
+          Delay(15);
           State=stWaitingForValue50;
           break;
         case stWaitingForValue50:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp50procent);
+          Delay(15);
           State=stWaitingForValue70;
           break;
         case stWaitingForValue70:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp70procent);
+          Delay(15);
           State=stWaitingForValue90;
           break;
         case stWaitingForValue90:
+          Delay(15);
           SaveHCalibrationPoint(Channal,cp90procent);
+          Delay(15);
           State=stSaveAndExit;
           break;
         default:
