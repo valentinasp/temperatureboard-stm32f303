@@ -360,7 +360,7 @@
 /* !!!! These following defines are available only when CPAL_I2C_MASTER_MODE is enabled !!!! */
 
 /* Enable the use of 10Bit Addressing Mode */
-#define CPAL_I2C_10BIT_ADDR_MODE
+//#define CPAL_I2C_10BIT_ADDR_MODE
 
 /* Enable the use of Memory Addressing Mode */
 /*#define CPAL_I2C_MEM_ADDR*/

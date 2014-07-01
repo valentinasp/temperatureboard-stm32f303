@@ -154,28 +154,30 @@ void InitCPAL(void){
   /* Initialize CPAL device with the selected parameters */
   CPAL_I2C_Init(&I2C_DevStructure);
   
-  sRxStructure.wNumData = 0; /* Number of data to be read */
-  sRxStructure.pbBuffer = &tRxBuffer[0];//(uint8_t*)Data; /* Transmit buffer */
-  sRxStructure.wAddr1 = 0x30; /*Command register address*/
-  sRxStructure.wAddr2 = 0x00; /*Command register address*/
-  I2C1_DevStructure.pCPAL_TransferRx = &sRxStructure;
-  I2C1_DevStructure.wCPAL_Options &= ~CPAL_OPT_NO_MEM_ADDR;
-  I2C1_DevStructure.wCPAL_Options &= ~CPAL_OPT_16BIT_REG;//8 bit
+ // sRxStructure.wNumData = 0; /* Number of data to be read */
+ // sRxStructure.pbBuffer = &tRxBuffer[0];//(uint8_t*)Data; /* Transmit buffer */
+ // sRxStructure.wAddr1 = 0x30; /*Command register address*/
+ // sRxStructure.wAddr2 = 0x00; /*Command register address*/
+ // I2C1_DevStructure.pCPAL_TransferRx = &sRxStructure;
+ // I2C1_DevStructure.wCPAL_Options &= ~CPAL_OPT_NO_MEM_ADDR;
+ // I2C1_DevStructure.wCPAL_Options &= ~CPAL_OPT_16BIT_REG;//8 bit
   
 }
 
 void SetBoardAddress (uint32_t Addr){
   sTxStructure.wAddr1=Addr;
   sRxStructure.wAddr1=Addr;
+  CPAL_I2C_Init(&I2C_DevStructure);
 }
 
 
 //==================   I2C Utilites ============================================
 void I2C_GetMagic(uint8_t* nr){
+  int8_t err = 0;
   tTxBuffer[0] = REG_MAGICREG;
   tRxBuffer[0] = 0x00;
-  drv_i2c_WriteBuffer(tTxBuffer,1); 
-  drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
+  err = drv_i2c_WriteBuffer(tTxBuffer,1); 
+  err = drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
   *nr = tRxBuffer[0];
 }
 
@@ -192,10 +194,11 @@ void I2C_ScannBoards(void){
   for(size_t i=0;i<127;i++){
     SetBoardAddress (i);
     mnr = 0;
-    Delay(5);
+    Delay(10);
     //try get magic nr
     I2C_GetMagic(&mnr);
     if (mnr==0xAB){
+      I2C_GetMagic(&mnr);
       BoardsNr++;
       BoardsArray=realloc(BoardsArray,BoardsNr*sizeof(uint8_t));
       BoardsArray[BoardsNr-1]=i;
@@ -321,11 +324,11 @@ void I2C_ViewSensorsProcess(void){
         //=======redraw calibration window heder==========
         printf("\x1b[2J");//terminal clear screen command
         
-        printf("\r\nSelected board address 0x%02X\r\n",BoardsArray[SelectedBoard]);
+        printf("Selected board address 0x%02X\r\n",BoardsArray[SelectedBoard]);
         for(size_t i=0;i<MAXHCHANNEL;i++){
-          printf("\r\nChannal %d: %d%%",i+1,CurrHumidityValues[Channal]);
+          printf("\r\nChannal %d: %.1f%%",i+1,(float)CurrHumidityValues[i]/10);
         }
-        printf("\r\nPress \"Enter\" to exit\r\n");
+        printf("\r\n\r\nPress \"Enter\" to exit\r\n");
         //=======redraw calibration window heder===========
       } 
       
