@@ -129,6 +129,8 @@ bool cmd_run_calibration(void){
   printf(select_calibration);
   Menu(CalibMenu);      
   CurrentMainMenuItem = oldItem;
+  clear_screen();
+  cmd_help();
   return true;
 }
 
@@ -214,7 +216,7 @@ bool cmd_termcalibration(void){
   printf("\r\nCalibration process is start.\r\nPlease select a channel (1..6) \r\n");
   Menu(ChannelMenu);      
   
-  return true;
+  return false;
 }
 
 
