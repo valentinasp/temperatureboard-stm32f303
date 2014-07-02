@@ -18,6 +18,7 @@ static __IO uint32_t TimingDelay;
 /* Private functions ---------------------------------------------------------*/
 
 /* Exported functions --------------------------------------------------------*/
+extern void Delay(__IO uint32_t nTime);
 /**
   * @brief  Inserts a delay time.
   * @param  nTime: specifies the delay time length, in 10 ms.
