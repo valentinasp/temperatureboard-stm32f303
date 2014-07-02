@@ -34,24 +34,29 @@ static void WriteToCanMsg(CAN_MESSAGE *msg);
 //====================================================================================================
 // irasu lenteles inicializacija
 //----------------------------------------------------------------------------------------------------
-void Init_RecordTable(void)
+void Init_RecordTable(char digital_input, char digital_output, char analog_input, char analog_output)
 {
-    unsigned short i;
+    unsigned short i,j,adr;
+    #if SPECIAL_IO_BLOCKS > 0
+        unsigned short k;
+    #endif
     
-    i=0;
-     
+    if(digital_input  > DIGITAL_INPUT_BLOCKS)  digital_input  = DIGITAL_INPUT_BLOCKS;
+    if(digital_output > DIGITAL_OUTPUT_BLOCKS) digital_output = DIGITAL_OUTPUT_BLOCKS;
+    if(analog_input   > ANALOG_INPUTS)         analog_input   = ANALOG_INPUTS;
+    if(analog_output  > ANALOG_OUTPUTS)        analog_output  = ANALOG_OUTPUTS;
+    
+    i = 0;
     HeartBeatTimer = GuardTimer = 0;
-    //RecordHeartBeatTime = RecordGuardTime = 0;
-    
     
     RegisterRecord(0x0000,FLAG_READ_ONLY,0x0300,&i);                 // protokolo ID
     RegisterRecord(0x0100,FLAG_READ_ONLY,0x0002,&i);                 // Prietaiso ID / serijinis numeris
     RegisterRecord(0x0101,FLAG_READ_ONLY,HARDWARE_VER,&i);           // prietaiso aparatines dalies versija
     RegisterRecord(0x0102,FLAG_READ_ONLY,SOFTWARE_VER,&i);           // prietaiso programines dalies versija
-    RegisterRecord(0x0103,FLAG_READ_ONLY,DIGITAL_INPUT_BLOCKS,&i);   // skaitmeniniu iejimu skaicius
-    RegisterRecord(0x0104,FLAG_READ_ONLY,DIGITAL_OUTPUT_BLOCKS,&i);  // skaitmeniniu isejimu skaicius
-    RegisterRecord(0x0105,FLAG_READ_ONLY,ANALOG_INPUTS,&i);          // analoginiu iejimu skaicius
-    RegisterRecord(0x0106,FLAG_READ_ONLY,ANALOG_OUTPUTS,&i);         // analoginiu isejimu skaicius
+    RegisterRecord(0x0103,FLAG_READ_ONLY,(RECORD_TYPE)digital_input,&i);   // skaitmeniniu iejimu skaicius
+    RegisterRecord(0x0104,FLAG_READ_ONLY,(RECORD_TYPE)digital_output,&i);  // skaitmeniniu isejimu skaicius
+    RegisterRecord(0x0105,FLAG_READ_ONLY,(RECORD_TYPE)analog_input,&i);    // analoginiu iejimu skaicius
+    RegisterRecord(0x0106,FLAG_READ_ONLY,(RECORD_TYPE)analog_output,&i);   // analoginiu isejimu skaicius
     
     RegisterRecord(0x0200,FLAG_READ_ONLY,0x0001,&i);// starto statusas
   
@@ -68,113 +73,57 @@ void Init_RecordTable(void)
     RegisterRecord(0x0600,FLAG_WRITE_ONLY,0x0000,&i); // duomenu issaugojimas flash atmintyje
     
     #if DIGITAL_INPUT_BLOCKS>0
-        RegisterRecord(0x1000,FLAG_READ_ONLY,0x0000,&i);  // skaitmeniniai iejimai
-        RegisterRecord(0x1001,FLAG_READ_WRITE,0x0000,&i); // kauke, bet koks pokytis
-        RegisterRecord(0x1002,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 0->1
-        RegisterRecord(0x1003,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 1->0
-        RegisterRecord(0x1004,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x1005,FLAG_READ_ONLY, 0x0000,&i);  // timeris
+        for(j=0; j<DIGITAL_INPUT_BLOCKS; j++)
+        {
+            adr = (0x100*j)+0x1000;
+            RegisterRecord(adr,FLAG_READ_ONLY,0x0000,&i);    // skaitmeniniai iejimai
+            RegisterRecord(adr+1,FLAG_READ_WRITE,0x0000,&i); // kauke, bet koks pokytis
+            RegisterRecord(adr+2,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 0->1
+            RegisterRecord(adr+3,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 1->0
+            RegisterRecord(adr+4,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
+            RegisterRecord(adr+5,FLAG_READ_ONLY, 0x0000,&i); // timeris
+        }
     #endif
-    #if DIGITAL_INPUT_BLOCKS>1
-        RegisterRecord(0x1100,FLAG_READ_ONLY,0x0000,&i);  // skaitmeniniai iejimai
-        RegisterRecord(0x1101,FLAG_READ_WRITE,0x0000,&i); // kauke, bet koks pokytis
-        RegisterRecord(0x1102,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 0->1
-        RegisterRecord(0x1103,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 1->0
-        RegisterRecord(0x1104,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x1105,FLAG_READ_ONLY, 0x0000,&i);  // timeris
-    #endif 
-    #if DIGITAL_INPUT_BLOCKS>2
-        RegisterRecord(0x1200,FLAG_READ_ONLY,0x0000,&i);  // skaitmeniniai iejimai
-        RegisterRecord(0x1201,FLAG_READ_WRITE,0x0000,&i); // kauke, bet koks pokytis
-        RegisterRecord(0x1202,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 0->1
-        RegisterRecord(0x1203,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 1->0
-        RegisterRecord(0x1204,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x1205,FLAG_READ_ONLY, 0x0000,&i);  // timeris
-    #endif
-    #if DIGITAL_INPUT_BLOCKS>3
-        RegisterRecord(0x1300,FLAG_READ_ONLY,0x0000,&i);  // skaitmeniniai iejimai
-        RegisterRecord(0x1301,FLAG_READ_WRITE,0x0000,&i); // kauke, bet koks pokytis
-        RegisterRecord(0x1302,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 0->1
-        RegisterRecord(0x1303,FLAG_READ_WRITE,0x0000,&i); // kauke, pokytis 1->0
-        RegisterRecord(0x1304,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x1305,FLAG_READ_ONLY, 0x0000,&i);  // timeris
-    #endif
-    
-    
+      
     #if DIGITAL_OUTPUT_BLOCKS>0
-        RegisterRecord(0x2000,FLAG_READ_WRITE,0x0000,&i); // skaitmeniniai isejimai
-        RegisterRecord(0x2001,FLAG_WRITE_ONLY,0x0000,&i); // tik ijungimas
-        RegisterRecord(0x2002,FLAG_WRITE_ONLY,0x0000,&i); // tik isjungimas
+        for(j=0; j<DIGITAL_OUTPUT_BLOCKS; j++)
+        {
+            adr = (0x100*j)+0x2000;
+            RegisterRecord(adr,FLAG_READ_WRITE,0x0000,&i);   // skaitmeniniai isejimai
+            RegisterRecord(adr+1,FLAG_WRITE_ONLY,0x0000,&i); // tik ijungimas
+            RegisterRecord(adr+2,FLAG_WRITE_ONLY,0x0000,&i); // tik isjungimas
+        }
     #endif
-    #if DIGITAL_OUTPUT_BLOCKS>1
-        RegisterRecord(0x2100,FLAG_READ_WRITE,0x0000,&i); // skaitmeniniai isejimai
-        RegisterRecord(0x2101,FLAG_WRITE_ONLY,0x0000,&i); // tik ijungimas
-        RegisterRecord(0x2102,FLAG_WRITE_ONLY,0x0000,&i); // tik isjungimas
-    #endif
-    #if DIGITAL_OUTPUT_BLOCKS>2
-        RegisterRecord(0x2200,FLAG_READ_WRITE,0x0000,&i); // skaitmeniniai isejimai
-        RegisterRecord(0x2201,FLAG_WRITE_ONLY,0x0000,&i); // tik ijungimas
-        RegisterRecord(0x2202,FLAG_WRITE_ONLY,0x0000,&i); // tik isjungimas
-    #endif
-    #if DIGITAL_OUTPUT_BLOCKS>3
-        RegisterRecord(0x2300,FLAG_READ_WRITE,0x0000,&i); // skaitmeniniai isejimai
-        RegisterRecord(0x2301,FLAG_WRITE_ONLY,0x0000,&i); // tik ijungimas
-        RegisterRecord(0x2302,FLAG_WRITE_ONLY,0x0000,&i); // tik isjungimas
-    #endif
-    
     
     #if ANALOG_INPUTS>0
-        RegisterRecord(0x3000,FLAG_READ_ONLY,0x0000,&i);  // analoginis iejimas
-        RegisterRecord(0x3001,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant didejancia kryptimi, siunciamas pranesimas
-        RegisterRecord(0x3002,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant mazejancia kryptimi, siunciamas pranesimas 
-        RegisterRecord(0x3003,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x3004,FLAG_READ_ONLY, 0x0000,&i); // timeris
+        for(j=0; j<ANALOG_INPUTS; j++)
+        {
+            adr = (0x100*j)+0x3000;
+            RegisterRecord(adr,FLAG_READ_ONLY,   0x0000,&i); // analoginis iejimas
+            RegisterRecord(adr+1,FLAG_READ_ONLY, 0x0000,&i); // analoginis iejimas
+            RegisterRecord(adr+2,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant didejancia kryptimi, siunciamas pranesimas
+            RegisterRecord(adr+3,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant mazejancia kryptimi, siunciamas pranesimas 
+            RegisterRecord(adr+4,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
+            RegisterRecord(adr+5,FLAG_READ_ONLY, 0x0000,&i); // timeris
+        }
     #endif
-    #if ANALOG_INPUTS>1
-        RegisterRecord(0x3100,FLAG_READ_ONLY,0x0000,&i);  // analoginis iejimas
-        RegisterRecord(0x3101,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant didejancia kryptimi, siunciamas pranesimas
-        RegisterRecord(0x3102,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant mazejancia kryptimi, siunciamas pranesimas 
-        RegisterRecord(0x3103,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x3104,FLAG_READ_ONLY, 0x0000,&i); // timeris
-    #endif
-    #if ANALOG_INPUTS>2
-        RegisterRecord(0x3200,FLAG_READ_ONLY,0x0000,&i);  // analoginis iejimas
-        RegisterRecord(0x3201,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant didejancia kryptimi, siunciamas pranesimas
-        RegisterRecord(0x3202,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant mazejancia kryptimi, siunciamas pranesimas 
-        RegisterRecord(0x3203,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x3204,FLAG_READ_ONLY, 0x0000,&i); // timeris
-    #endif
-    #if ANALOG_INPUTS>3
-        RegisterRecord(0x3300,FLAG_READ_ONLY,0x0000,&i);  // analoginis iejimas
-        RegisterRecord(0x3301,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant didejancia kryptimi, siunciamas pranesimas
-        RegisterRecord(0x3302,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant mazejancia kryptimi, siunciamas pranesimas 
-        RegisterRecord(0x3303,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x3304,FLAG_READ_ONLY, 0x0000,&i); // timeris
-    #endif
-    #if ANALOG_INPUTS>4
-        RegisterRecord(0x3400,FLAG_READ_ONLY,0x0000,&i);  // analoginis iejimas
-        RegisterRecord(0x3401,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant didejancia kryptimi, siunciamas pranesimas
-        RegisterRecord(0x3402,FLAG_READ_WRITE,0x0000,&i); // lygis, kuri pereinant mazejancia kryptimi, siunciamas pranesimas 
-        RegisterRecord(0x3403,FLAG_READ_WRITE,0x0000,&i); // pranesimo siuntimo periodiskumas
-        RegisterRecord(0x3404,FLAG_READ_ONLY, 0x0000,&i); // timeris
-    #endif
-    
-    
+   
     #if ANALOG_OUTPUTS>0
-        RegisterRecord(0x4000,FLAG_READ_WRITE,0x0000,&i);  // analoginis isejimas
+        for(j=0; j<ANALOG_OUTPUTS; j++)
+        {
+            adr = (0x100*j)+0x4000;
+            RegisterRecord(adr,FLAG_READ_WRITE,0x0000,&i);  // analoginis isejimas
+        }
     #endif
-    #if ANALOG_OUTPUTS>1
-        RegisterRecord(0x4100,FLAG_READ_WRITE,0x0000,&i);  // analoginis isejimas
+        
+    #if SPECIAL_IO_BLOCKS > 0
+        for(j=0; j<SPECIAL_IO_BLOCKS; j++)
+        {
+           adr = (0x100*j)+0x5000;
+           for(k=0; k<SPECIAL_IO_SUBBLOCK; k++) RegisterRecord(adr+k,FLAG_READ_WRITE,0x0000,&i); // spec. iejimas/isejimas
+        }
     #endif
-    #if ANALOG_OUTPUTS>2
-        RegisterRecord(0x4200,FLAG_READ_WRITE,0x0000,&i);  // analoginis isejimas
-    #endif
-    #if ANALOG_OUTPUTS>3
-        RegisterRecord(0x4300,FLAG_READ_WRITE,0x0000,&i);  // analoginis isejimas
-    #endif
-    #if ANALOG_OUTPUTS>4
-        RegisterRecord(0x4400,FLAG_READ_WRITE,0x0000,&i);  // analoginis isejimas
-    #endif
+   
 }
 
 
@@ -233,11 +182,11 @@ static unsigned short TableWrite(unsigned short adr, RECORD_TYPE val, unsigned c
             else 
             {
                 TableRecord[i].val = val;
-                //if(adr == 0x0500) RecordHeartBeatTime = val;    // statuso periodiskumo siuntimo inicializavimas
+                //if(adr == 0x0500) RecordHeartBeatTime = val;   // statuso periodiskumo siuntimo inicializavimas
                 //if(adr == 0x0501) RecordGuardTime = val;
-                if(adr == 0x0502) GuardTimer = 0;               // centrinio valdiklio veikimo sekimas 
-                if(adr == 0x0400)                               // SystemState?
-                { 
+                if(adr == 0x0502) GuardTimer = 0;                // centrinio valdiklio veikimo sekimas 
+                if(adr == 0x0400)                                // SystemState?
+                {
                     if(flag == 0) SystemStateChange(val);
                     GuardTimer = 0;
                 }
@@ -260,6 +209,11 @@ static unsigned short TableWrite(unsigned short adr, RECORD_TYPE val, unsigned c
                 #if DIGITAL_OUTPUT_BLOCKS>3
                     if((adr & 0xFF00) == 0x2300) DigitalOutput(3, val, adr & 0xF);
                 #endif
+                
+                #if SPECIAL_IO_BLOCKS > 0
+                    if((adr & 0xF000) == 0x5000) SpecialIO_Output((adr >> 16) & 0xF, adr & 0xFF, val);
+                #endif
+                
                 // pasizymeti apie analoginiu isejimu isejimu atnaujinima
                 // if(i == Index_AnalogOutput1) TableRecordStatus |= A_O_UPDATED;
             }
@@ -617,10 +571,11 @@ static void UpdateDigitalOutputs(void)
 #endif
 
 
+
+#if ANALOG_INPUTS>0
 //===================================================================================
 // ivesti analoginio iejimo verte
 //-----------------------------------------------------------------------------------
-#if ANALOG_INPUTS>0
 void AnalogInput(unsigned short bank, RECORD_TYPE input)
 {   
     RECORD_TYPE old,temp;
@@ -631,25 +586,47 @@ void AnalogInput(unsigned short bank, RECORD_TYPE input)
     if(TableRead(adr, &old) != 0) return;
 
     // tikrinamas pokytis didejancia kryptimi
-    if(TableRead(adr+1, &temp) != 0) return;
+    if(TableRead(adr+2, &temp) != 0) return;
     if(temp != 0)
     {
         if((old < temp) && (input > temp)) flag |= 1;
     }
         
     // tikrinamas pokytis mazejancia kryptimi
-    if(TableRead(adr+2, &temp) != 0) return;    
+    if(TableRead(adr+3, &temp) != 0) return;    
     if(temp != 0)
     {
         if((old > temp) && (input < temp)) flag |= 1;
     }
 
+    // tikrinamas ar siusti is karto
+    if(TableRead(adr+4, &temp) != 0) return; 
+    if(sizeof(RECORD_TYPE) == 2) 
+    {
+        if(temp == 0xFFFF) flag |= 1; 
+    }
+    else
+    {
+        if(temp == 0xFFFFFFFF) flag |= 1; 
+    }
+    
     TableWrite(adr, input, 1); // issaugom verte
     
     if((SystemState & 0xF0) == SYS_STATE_OPERATIONAL)
     {
         if(flag) SendAnalogInput(bank);
     }
+}
+
+//===================================================================================
+// ivesti analoginio iejimo verte, neformatuota ADC verte
+//-----------------------------------------------------------------------------------
+void AnalogUnformatedInput(unsigned short bank, RECORD_TYPE input)
+{
+    unsigned short adr;
+    
+    adr = (bank*0x100) + 0x3000;
+    TableWrite(adr+1, input, 1); // issaugom verte
 }
 #endif
 
@@ -661,9 +638,88 @@ void CanOpenTimer(void)
 {
     RECORD_TYPE rec,timer;
     CAN_MESSAGE msg;
+    unsigned short i,adr;
     
     if(TableRead(0x0502, &rec) == 0) TableWrite(0x0502, rec+CAN_OPEN_TIMER_TICK_MS, 1); 
     if(TableRead(0x0503, &rec) == 0) TableWrite(0x0503, rec+CAN_OPEN_TIMER_TICK_MS, 1); 
+    
+    #if ANALOG_INPUTS>0
+        for(i=0; i<ANALOG_INPUTS; i++)
+        {
+            adr = (i*0x100) + 0x3000;
+            // timeris
+            if(TableRead(adr+5, &rec) == 0) 
+            {
+                timer = rec+CAN_OPEN_TIMER_TICK_MS;
+                TableWrite(adr+5, timer, 1); 
+            }
+            // ar siusti paketa?
+            if(TableRead(adr+4, &rec) == 0)
+            {
+                if(sizeof(RECORD_TYPE)==2)
+                {
+                    if((rec != 0) && (rec != 0xFFFF)) 
+                    {
+                        if(timer > rec)
+                        {
+                            SendAnalogInput(i);
+                            TableWrite(adr+5, 0, 1); 
+                        }
+                    }
+                }
+                else
+                {
+                    if((rec != 0) && (rec != 0xFFFFFFFF)) 
+                    {
+                        if(timer > rec)
+                        {
+                            SendAnalogInput(i);
+                            TableWrite(adr+5, 0, 1); 
+                        }
+                    } 
+                }    
+            }            
+        }
+    #endif
+    
+    #if DIGITAL_INPUT_BLOCKS>0
+        for(i=0; i<DIGITAL_INPUT_BLOCKS; i++)
+        {
+            adr = (i*0x100) + 0x0000;
+            // timeris
+            if(TableRead(adr+5, &rec) == 0) 
+            {
+                timer = rec+CAN_OPEN_TIMER_TICK_MS;
+                TableWrite(adr+5, timer, 1); 
+            }
+            // ar siusti paketa?
+            if(TableRead(adr+4, &rec) == 0)
+            {
+                if(sizeof(RECORD_TYPE)==2)
+                {
+                    if((rec != 0) && (rec != 0xFFFF)) 
+                    {
+                        if(timer > rec)
+                        {
+                            SendDigitalInput(i);
+                            TableWrite(adr+5, 0, 1); 
+                        }
+                    }
+                }
+                else
+                {
+                    if((rec != 0) && (rec != 0xFFFFFFFF)) 
+                    {
+                        if(timer > rec)
+                        {
+                            SendDigitalInput(i);
+                            TableWrite(adr+5, 0, 1); 
+                        }
+                    } 
+                }    
+            }            
+        }
+    #endif
     
     if((SystemState & 0xF0) == SYS_STATE_OPERATIONAL)
     {     
@@ -691,10 +747,9 @@ void CanOpenTimer(void)
                     TableWrite(0x0502, 0, 1);
                     TableWrite(0x0503, 0, 1);
                     TableWrite(0x0300, 0x0002, 1); // klaidos kodas
-                    TableWrite(0x0400, 0x0003, 1); // stabdom
-                    //HeartBeatTimer = 0;
                     ReadToCanMsg(0x0300,&msg);
                     SendCanMsg(&msg);
+                    SystemStateChange(3);          // stabdom                   
                 }
             }
         } 
@@ -732,6 +787,8 @@ void SystemStateChange(RECORD_TYPE val)
         #if ANALOG_OUTPUTS>0
             UpdateDigitalOutputs();
         #endif
+        ReadToCanMsg(0x0400,&msg);
+        SendCanMsg(&msg);
     }
     if(val == 3) 
     {
@@ -749,6 +806,8 @@ void SystemStateChange(RECORD_TYPE val)
         #if DIGITAL_OUTPUT_BLOCKS>3
             ClearOutputs(3, 0xFFFFFFFF);
         #endif
+        ReadToCanMsg(0x0400,&msg);
+        SendCanMsg(&msg);
     }
     if(val == 4) 
     {
@@ -766,8 +825,17 @@ void SystemStateChange(RECORD_TYPE val)
         #if DIGITAL_OUTPUT_BLOCKS>3
             ClearOutputs(3, 0xFFFFFFFF);
         #endif
+        ReadToCanMsg(0x0400,&msg);
+        SendCanMsg(&msg);
     }
     //if(val == 5) StartBooloader();// iejimas i bootloaderi
     //....... prideti ko reikia
+}
+
+void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE val){
+  //bank = 0
+  //index - Analog input number
+  //val - 0..8 calibration point
+  //TODO: add calibration point
 }
 
