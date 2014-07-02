@@ -171,10 +171,10 @@ void TCalibrationProcess(channel_t Channal){
     } 
     switch (State){
      case stWaitingForValue0:
-       printf("Press \"Enter\" to save 0 C° calibration value\r\n");
+       printf("Press \"Enter\" to save '0'C calibration value\r\n");
        break;
      case stWaitingForValue100:
-       printf("Press \"Enter\" to save 100 C° calibration value\r\n");
+       printf("Press \"Enter\" to save '100'C calibration value\r\n");
        break;
      default:
        //assert(false);

@@ -74,7 +74,7 @@ bool GetADCValues(unsigned int* Values,size_t ValuesNr){
   for(size_t i=0;i<TEMP_VALUES_SIZE;i++)
   {
     for(size_t ch=0;ch<CHANNELS_NR;ch++){
-      tempValues[ch][i] = ADC_GetChannelConversionValue(ch);
+      tempValues[ch][i] = ADC_GetChannelConversionValue(ch+1);
     }
   }
   
