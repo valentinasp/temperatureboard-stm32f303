@@ -91,6 +91,7 @@ bool EraseCalibration(void);
 void SetGenerator(bool *value);
 
 void HCalibrationProcess(channel_t Channal);
+void TCalibrationProcess(channel_t Channal);
 
 /* External variables --------------------------------------------------------*/
 extern CalibrationTypeDef CalibrationValues[MAXTCHANNEL];

@@ -8,16 +8,17 @@
 
 /* Includes ------------------------------------------------------------------*/
 //#include "flash_if.h"
-#include "calibration.h"
+
 #include "interpolation.h"
-#include "delay.h"
+//#include "delay.h"
 #include "crc.h"
 #include "eeprom.h"
 #include "i2c.h"
 #include "keyboard.h"
-//#include "ADCmeasurement.h"
+#include "ADCmeasurement.h"
 #include "serial.h"//only for test
 #include "utils.h"
+#include "calibration.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef enum {
@@ -123,8 +124,139 @@ bool EraseCalibration(void){
   return (bool)err;
 }
 
+void TCalibrationProcess(channel_t Channal){
+#if 1
+  uint32_t ticks;
+  uint32_t DevTicksRef100ms = 0; 
+  uint32_t DevTicksRef10ms  = 0; 
+  uint32_t DevTicksRef500ms = 0;
+  uint32_t DevTicksRef1s    = 0;
+  uint32_t DevTicksRef2_5s  = 0;
+  uint32_t DevTicksRef5s    = 0;
+  char KeyPressed;
+#define MAXCHANNEL 6
+  unsigned int CurrADCValues[MAXCHANNEL];
+  float CurrVoltage = 0;
+  typedef enum {
+    stWaitingForValue0,
+    stWaitingForValue100,
+    stSaveAndExit
+  } states_t;
+  states_t State=stWaitingForValue0;
+  
+  for(;;){
+    //=======redraw calibration window heder==========
+    printf("\x1b[2J");//terminal clear screen command
+    switch (Channal)
+    {
+    case Channel1:
+      printf("======= Selected channel: 1 ======\r\n");
+      break;
+    case Channel2:
+      printf("======= Selected channel: 2 ======\r\n");
+      break;
+    case Channel3:
+      printf("======= Selected channel: 3 ======\r\n");
+      break;
+    case Channel4:
+      printf("======= Selected channel: 4 ======\r\n");
+      break;
+    case Channel5:
+      printf("======= Selected channel: 5 ======\r\n");
+      break;
+    case Channel6:
+      printf("======= Selected channel: 6 ======\r\n");
+      break;
+    } 
+    switch (State){
+     case stWaitingForValue0:
+       printf("Press \"Enter\" to save 0 C° calibration value\r\n");
+       break;
+     case stWaitingForValue100:
+       printf("Press \"Enter\" to save 100 C° calibration value\r\n");
+       break;
+     default:
+       //assert(false);
+       break;
+     }
+    //=======redraw calibration window heder===========
+    KeyPressed=0;
+    do
+    {
+        ticks = DevTicks;
+        if((ticks - DevTicksRef10ms) >= 10){
+          KeyPressed=get_char();
+          DevTicksRef10ms = ticks;     
+        } 
+        /* =============================================================
+         100 msec process 
+        ================================================================*/
+        if((ticks - DevTicksRef100ms) >= 100){ // 100ms   
+          DevTicksRef100ms = ticks;
+        }
+        
+        /* =============================================================
+         500 msec process 
+        ================================================================*/
+        if((ticks - DevTicksRef500ms) >= 500){ // 500 msec
+          DevTicksRef500ms = ticks;
+          
+          //printf("\x1b[2J");//terminal clear screen command
+          printf("\r%d  volt:%.3f",CurrADCValues[Channal],CurrVoltage);
+        } 
+        
+        /* =============================================================
+        1 sec process
+        ================================================================*/
+        if((ticks - DevTicksRef1s) >= 1000){ // 1s      
+          DevTicksRef1s = ticks;    
+        }
+        /* =============================================================
+        2,5 sec process
+        ================================================================*/
+        if((ticks - DevTicksRef2_5s) >= 2500){ // 2,5 s      
+          DevTicksRef2_5s = ticks;
+          
+          GetADCValues(CurrADCValues,sizeof(CurrADCValues)/sizeof(CurrADCValues[0]));
+          
+          //CurrADCValues[Channal] = (tempADCValues1[Channal]+tempADCValues2[Channal])/2;
+          CurrVoltage = (float)(CurrADCValues[Channal]*0.80586);
+          CurrVoltage = CurrVoltage/1000;
+          
+        }
+        /* =============================================================
+        5 sec process
+        ================================================================*/
+        if((ticks - DevTicksRef5s) >= 5000){ // 5s 
+          DevTicksRef5s = ticks;
+ 
+        }
+        //==================================================================     
+    }while(KeyPressed!=CR);
+  
+     switch (State)
+     {
+        case stWaitingForValue0:
+          WriteCalibrationValues.cbCalibrValue0=CurrADCValues[Channal];
+          State=stWaitingForValue100;
+          break;
+        case stWaitingForValue100:
+          WriteCalibrationValues.cbCalibrValue100=CurrADCValues[Channal];
+          State=stSaveAndExit;
+          break;
+        default:
+          //assert(false);
+          break;
+     }
+     if(State==stSaveAndExit){
+       WriteCalibration(&WriteCalibrationValues,Channal);
+       return;
+     }
+  }
+#endif
+}
 
-void HCalibrationProcess(channel_t Channal){//(uint16_t* CalibValuesINDX,CalibrationTypeDef* CalibValues){
+void HCalibrationProcess(channel_t Channal){
   uint32_t ticks;
   uint32_t DevTicksRef100ms = 0; 
   uint32_t DevTicksRef10ms  = 0; 

@@ -18,8 +18,20 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdlib.h>     /* qsort */   
+#include <stdlib.h>     /* qsort */  
+#include <stdint.h>
 /* Exported types ------------------------------------------------------------*/
+   typedef enum 
+{ 
+  adc_channel_0 = 0,
+  adc_channel_1,
+  adc_channel_2,
+  adc_channel_3,
+  adc_channel_4,
+  adc_channel_5,
+  adc_channel_6 //Internel temperature
+} ADC_Channels;
+
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
