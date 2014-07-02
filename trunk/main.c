@@ -40,6 +40,7 @@
 #include "drv_can_open.h"
 #include "drv_stm32_can.h"
 #include "calibration.h"
+#include "ADCmeasurement.h"
 
 
 /** @addtogroup STM32F30x_StdPeriph_Examples
@@ -97,6 +98,9 @@ uint16_t VarDataTab[NB_OF_VAR] = {0, 0, 0};
 
 RCC_ClocksTypeDef RCC_Clocks;
 __IO uint32_t ActionState = ACTION_NONE;
+
+unsigned int ADCValues[6];
+float Voltage[6];
 
 /* Private function prototypes -----------------------------------------------*/
 static void CAN_Config(void);
@@ -283,18 +287,25 @@ void kernel(void)
       DevTicksRef500ms = ticks;
       
       printf("\x1b[2J");//terminal clear screen command
-      //double Humidity = 0;
-      //for(size_t Channel=0;Channel<MAXCHANNEL;Channel++){
-      //  GetValue(Channel,ADCValues[Channel],&Humidity);
-      //  printf("CH%d %d  volt:%.3f humidity: %.1f\r\n",Channel+1,ADCValues[Channel],Voltage[Channel],Humidity);
-      printf("ADC Value0 = %d\r\n",ADC_GetChannelConversionValue(0));
+      double temperature = 0;
+      for(size_t Channel=0;Channel<MAXTCHANNEL;Channel++){
+        GetValue(Channel,ADCValues[Channel],&temperature);
+        if(temperature<0 || temperature>200){
+          printf("CH%d %d  volt:%.3f temperature: Error\r\n",Channel+1,ADCValues[Channel],Voltage[Channel]); 
+        }else{
+          printf("CH%d %d  volt:%.3f temperature: %.1f\r\n",Channel+1,ADCValues[Channel],Voltage[Channel],temperature);
+        }
+        
+      }
+
+/*      printf("ADC Value0 = %d\r\n",ADC_GetChannelConversionValue(0));
       printf("ADC Value1 = %d\r\n",ADC_GetChannelConversionValue(1));
       printf("ADC Value2 = %d\r\n",ADC_GetChannelConversionValue(2));
       printf("ADC Value3 = %d\r\n",ADC_GetChannelConversionValue(3));
       printf("ADC Value4 = %d\r\n",ADC_GetChannelConversionValue(4));
       printf("ADC Value5 = %d\r\n",ADC_GetChannelConversionValue(5));
       printf("ADC Value6 = %d\r\n",ADC_GetChannelConversionValue(6));
-      
+*/      
       printf("\r\nEnter '%s' string to enter the main menu",MagicString);
       //}
       //
@@ -341,20 +352,13 @@ void kernel(void)
     ================================================================*/
     if((ticks - DevTicksRef2_5s) >= 2500){ // 2,5 s      
       DevTicksRef2_5s = ticks;
-      /*
-      if(GeneratorVal){
-        GetADCValues(tempADCValues2,sizeof(tempADCValues2)/sizeof(tempADCValues2[0]));
-      }else{
-        GetADCValues(tempADCValues1,sizeof(tempADCValues1)/sizeof(tempADCValues1[0]));
-      }
-      for(size_t ch=0;ch<MAXCHANNEL;ch++){
-        ADCValues[ch] = (tempADCValues1[ch]+tempADCValues2[ch])/2;
+
+      GetADCValues(ADCValues,sizeof(ADCValues)/sizeof(ADCValues[0]));
+      for(size_t ch=0;ch<MAXTCHANNEL;ch++){
         Voltage[ch] = (float)(ADCValues[ch]*0.80586);
         Voltage[ch] = Voltage[ch]/1000;  
       }
         
-      SetGenerator(&GeneratorVal);
-      */
     }    
     /* =============================================================
     5 sec process
