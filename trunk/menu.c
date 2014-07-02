@@ -11,8 +11,8 @@
 #include "menu_core.h"
 #include "stdio.h"
 #include "calibration.h"
-#include "delay.h"
 #include "i2c.h"
+#include "delay.h"
 /* Private typedef -----------------------------------------------------------*/
 typedef enum {
    main_Not = 0,

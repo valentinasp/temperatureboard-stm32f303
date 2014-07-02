@@ -7,8 +7,8 @@
 *******************************************************************************/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __DELAY_H
-#define __DELAY_H
+#ifndef __INTERPOLIATION_H
+#define __INTERPOLIATION_H
 
 /* Includes ------------------------------------------------------------------*/
 #include <cstring>
@@ -38,6 +38,6 @@ bool GetValue(size_t ChannelNr,double CurrADCValue,double* CalculatedValue);
 }
 #endif
 
-#endif  /*__DELAY_H*/
+#endif  /*__INTERPOLIATION_H*/
 
 /******************* (C) COPYRIGHT ****************END OF FILE****/

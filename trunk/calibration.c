@@ -8,9 +8,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 //#include "flash_if.h"
-
+#include "calibration.h"
+#include "delay.h"
 #include "interpolation.h"
-//#include "delay.h"
+#include "stm32f30x.h" 
 #include "crc.h"
 #include "eeprom.h"
 #include "i2c.h"
@@ -18,7 +19,7 @@
 #include "ADCmeasurement.h"
 #include "serial.h"//only for test
 #include "utils.h"
-#include "calibration.h"
+
 
 /* Private typedef -----------------------------------------------------------*/
 typedef enum {
