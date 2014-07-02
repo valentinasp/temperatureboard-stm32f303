@@ -27,6 +27,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "interpolation.h"
+#include "delay.h"
 #include "eeprom.h"
 #include "serial.h"
 #include "stdio.h"
@@ -37,6 +39,9 @@
 #include "i2c.h"
 #include "drv_can_open.h"
 #include "drv_stm32_can.h"
+#include "calibration.h"
+
+
 /** @addtogroup STM32F30x_StdPeriph_Examples
   * @{
   */
@@ -117,7 +122,7 @@ int main(void)
        system_stm32f30x.c file
      */
   /* Test Virtual EEPROM */ 
-#if 1  
+#if 0  
   //uint16_t varvalue = 0;
   unsigned char SendBuffer[10];
   unsigned char ResiveBuffer[10];
@@ -162,6 +167,12 @@ int main(void)
   EE_Read_Buff(VirtAddVarTab[0],ResiveBuffer,5);
   
 #endif
+  SysTick_Configuration();
+  
+  //init interpolation
+  InitInterpolationValues(MAXTCHANNEL,MAXPOINTS);  //init points
+  LoadCalibrationData();
+  
   ADC_Initialization(); 
   STM_HEATING_Init();
   /* Configures LED 1..4 */
@@ -238,7 +249,13 @@ void kernel(void)
     if((ticks - DevTicksRef10ms) >= 10){// 10ms  
       //KeyScan(); // keyboard scan
       //key = KeyGet(); // get keyboard values    
-      DevTicksRef10ms = ticks;     
+      DevTicksRef10ms = ticks;
+      CAN_MESSAGE msg;
+      if(ReceiveCanMsg(&msg)){ 
+        //printf("\n\rCAN %x %x %x",msg.Id,msg.len,msg.data[0]);
+        CanOpenProtocol(&msg);
+        //for(;;);  
+      }
     } 
     /* =============================================================
      50 msec process 
@@ -288,32 +305,34 @@ void kernel(void)
     ================================================================*/
     if((ticks - DevTicksRef1s) >= 1000){ // 1s      
       DevTicksRef1s = ticks;
-      
+ 
+ //     
  //     AnalogInput(0,GetHumidityValue(Channel1));
       
       //TestProg();
       STM_EVAL_LEDToggle(LED1);
       STM_EVAL_LEDToggle(LED2);
-      
-//      SetBoardAddress(0x30);//Board nr1
-      //Read redister
-//      I2C_GetMagic(&magicnr);
-//     tTxBuffer[0] = 0x00;
-//     drv_i2c_WriteBuffer(tTxBuffer,1); 
-//     drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
 
+#if 0      
+      SetBoardAddress(0x30);//Board nr1
       //Read redister
-//      tTxBuffer[0] = 0x10;
-//      drv_i2c_WriteBuffer(tTxBuffer,1); 
-//      drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
-/*      
+      I2C_GetMagic(&magicnr);
+      tTxBuffer[0] = 0x00;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
+
+      Read redister
+      tTxBuffer[0] = 0x10;
+      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
+      
       SetBoardAddress(0x35);//Board nr2
       
       //Read redister
       tTxBuffer[0] = 0x10;
       drv_i2c_WriteBuffer(tTxBuffer,1); 
       drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
-*/  
+#endif
     }
      /* =============================================================
     2,5 sec process
@@ -334,19 +353,13 @@ void kernel(void)
         
       SetGenerator(&GeneratorVal);
       */
-    }
-    
-    CAN_MESSAGE msg;
-    if(ReceiveCanMsg(&msg)){ 
-      printf("\n\rCAN %x %x %x",msg.Id,msg.len,msg.data[0]);
-      CanOpenProtocol(&msg);
-    //for(;;);  
-    }
-    
+    }    
     /* =============================================================
     5 sec process
     ================================================================*/
     if((ticks - DevTicksRef5s) >= 5000){ // 5s 
+
+#if 0      
       CAN_MESSAGE msg;
       DevTicksRef5s = ticks;
       msg.Id= 0x134;
@@ -366,7 +379,7 @@ void kernel(void)
       //STM_HEATING_Toggle();
       //TxMessage.Data[0] = ++KeyNumber;
       //CAN_Transmit(CANx, &TxMessage);
-      
+#endif 
     }
     //==================================================================   
     
@@ -524,8 +537,6 @@ static void CAN_Config(void)
   
   /* Enable FIFO 0 message pending Interrupt */
   CAN_ITConfig(CANx, CAN_IT_FMP0, ENABLE);
-  
-  
   Init_CanIrq();
 }
 

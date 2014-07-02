@@ -40,16 +40,6 @@ ADC_InitTypeDef ADC_InitStructure;
 DMA_InitTypeDef DMA_InitStructure;
 GPIO_InitTypeDef ADC_GPIO_InitStructure;
 
-typedef enum 
-{ 
-  adc_channel_0 = 0,
-  adc_channel_1,
-  adc_channel_2,
-  adc_channel_3,
-  adc_channel_4,
-  adc_channel_5,
-  adc_channel_6 //Internel temperature
-} ADC_Channels;
 
 __IO uint16_t ADC_ConvertedValue_Tbl[7];
 
