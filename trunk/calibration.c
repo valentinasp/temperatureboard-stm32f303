@@ -39,6 +39,7 @@ typedef enum {
     cp90procent
 } HCalibrationPoint_t;
 /* Private define ------------------------------------------------------------*/
+#define MAXCHANNEL 6
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Extern variables ----------------------------------------------------------*/
@@ -135,7 +136,6 @@ void TCalibrationProcess(channel_t Channal){
   uint32_t DevTicksRef2_5s  = 0;
   uint32_t DevTicksRef5s    = 0;
   char KeyPressed;
-#define MAXCHANNEL 6
   unsigned int CurrADCValues[MAXCHANNEL];
   float CurrVoltage = 0;
   typedef enum {

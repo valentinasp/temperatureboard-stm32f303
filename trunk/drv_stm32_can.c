@@ -7,7 +7,7 @@ static void CAN_hw_rd (CAN_MESSAGE *msg);
 
 
 CAN_MESSAGE  Can1RxBuf[CAN1_RX_BUF_SIZE],Can1TxBuf[CAN1_TX_BUF_SIZE];
-unsigned int Can1_RxIn,Can1_RxOut,Can1_TxIn,Can1_TxOut,Can1Status;
+volatile unsigned int Can1_RxIn,Can1_RxOut,Can1_TxIn,Can1_TxOut,Can1Status;
 
 
 // leisti trukius
@@ -88,19 +88,7 @@ static void CAN_hw_rd(CAN_MESSAGE *msg)
     }
 
     // Read length (number of received bytes)                                  
-    msg->len = 0xF & (unsigned char)CAN1->sFIFOMailBox[0].RDTR;
-
-    // Read data bytes                                                         */
-    //msg->data[0] = (U32)0x000000FF & (CANx->sFIFOMailBox[0].RDLR);
-    //msg->data[1] = (U32)0x000000FF & (CANx->sFIFOMailBox[0].RDLR >> 8);
-    //msg->data[2] = (U32)0x000000FF & (CANx->sFIFOMailBox[0].RDLR >> 16);
-    //msg->data[3] = (U32)0x000000FF & (CANx->sFIFOMailBox[0].RDLR >> 24);
-
-    //msg->data[4] = (U32)0x000000FF & (CANx->sFIFOMailBox[0].RDHR);
-    //msg->data[5] = (U32)0x000000FF & (CANx->sFIFOMailBox[0].RDHR >> 8);
-    //msg->data[6] = (U32)0x000000FF & (CANx->sFIFOMailBox[0].RDHR >> 16);
-    //msg->data[7] = (U32)0x000000FF & (CANx->sFIFOMailBox[0].RDHR >> 24);
-    
+    msg->len = 0xF & (unsigned char)CAN1->sFIFOMailBox[0].RDTR;    
     msg->DataA = CAN1->sFIFOMailBox[0].RDLR;
     msg->DataB = CAN1->sFIFOMailBox[0].RDHR;
 }
@@ -132,22 +120,12 @@ static unsigned int CAN_hw_wr(CAN_MESSAGE *msg)
     }
 
     // Setup data bytes                                                     
-   /* CANx->sTxMailBox[0].TDLR = (((U32)msg->data[3] << 24) |
-                              ((U32)msg->data[2] << 16) |
-                              ((U32)msg->data[1] <<  8) |
-                              ((U32)msg->data[0])       );
-    CANx->sTxMailBox[0].TDHR = (((U32)msg->data[7] << 24) |
-                              ((U32)msg->data[6] << 16) |
-                              ((U32)msg->data[5] <<  8) |
-                              ((U32)msg->data[4])       );*/
     CAN1->sTxMailBox[0].TDLR = msg->DataA;
     CAN1->sTxMailBox[0].TDHR = msg->DataB;
 
     // Setup length              
     CAN1->sTxMailBox[0].TDTR &= ~0x0000000F;
     CAN1->sTxMailBox[0].TDTR |=  ((unsigned int)msg->len & 0x0000000F);
-
-    //CAN1->IER |= (1 << 0);  //  enable  TME interrupt 
 
     //  transmit message                
     CAN1->sTxMailBox[0].TIR  |=  (1 << 0);   //   set TXRQ bit 
@@ -171,7 +149,6 @@ void SendCanMsg(CAN_MESSAGE *msg )
         if(temp == Can1_TxOut) Can1Status |= CAN_TX_SOFT_OVERFLOW;
         else Can1_TxIn = temp;
         CAN1->IER |= (1 << 0);  //  enable  TME interrupt 
-
     }
 }
 

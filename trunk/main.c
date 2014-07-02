@@ -187,7 +187,7 @@ int main(void)
    
   /* CAN configuration */
   CAN_Config();
-  Init_RecordTable();
+  Init_RecordTable(0, 0, (6+4+4), 0);
   SystemStateChange(0);
   
   
@@ -306,9 +306,11 @@ void kernel(void)
     if((ticks - DevTicksRef1s) >= 1000){ // 1s      
       DevTicksRef1s = ticks;
  
- //     
- //     AnalogInput(0,GetHumidityValue(Channel1));
-      
+#if 0     
+     AnalogInput(0,GetHumidityValue(Channel1));
+     AnalogUnformatedInput(kanalas,x);
+#endif
+     
       //TestProg();
       STM_EVAL_LEDToggle(LED1);
       STM_EVAL_LEDToggle(LED2);
