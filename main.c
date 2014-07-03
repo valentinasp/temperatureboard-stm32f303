@@ -202,29 +202,6 @@ int main(void)
     
   SetBoardAddress(0x01);
 
-#if 0  
-  while(1)
-  {
-//    while(STM_EVAL_PBGetState(BUTTON_KEY) == KEY_PRESSED)
-//    {
-//      if(KeyNumber == 0x4) 
-//      {
-//        KeyNumber = 0x00;
-//      }
-//      else
-//      {
-       // LED_Display(++KeyNumber);
-        TxMessage.Data[0] = ++KeyNumber;
-        CAN_Transmit(CANx, &TxMessage);
-        //Delay();
-        
-//        while(STM_EVAL_PBGetState(BUTTON_KEY) != KEY_NOT_PRESSED)
-//        {
-//        }
-//      }
-//    }
-  }
-#endif
 /* Infinite loop */
   kernel();
   for(;;);
@@ -297,9 +274,17 @@ void kernel(void)
         }
         
       }
-
-/*      printf("ADC Value0 = %d\r\n",ADC_GetChannelConversionValue(0));
-      printf("ADC Value1 = %d\r\n",ADC_GetChannelConversionValue(1));
+      double TADCValue = ADC_GetChannelConversionValue(0);
+      double InternalTemper = (1.43-((double)TADCValue*0.80586/1000))/0.0043+25;
+      printf("Internal temperature = %0.1f\r\n",InternalTemper);
+      if(InternalTemper<10.0){
+        STM_HEATING_On();
+      }
+      if(InternalTemper>45.0){
+        STM_HEATING_Off();
+      }
+      
+/*      printf("ADC Value1 = %d\r\n",ADC_GetChannelConversionValue(1));
       printf("ADC Value2 = %d\r\n",ADC_GetChannelConversionValue(2));
       printf("ADC Value3 = %d\r\n",ADC_GetChannelConversionValue(3));
       printf("ADC Value4 = %d\r\n",ADC_GetChannelConversionValue(4));
