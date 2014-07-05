@@ -41,6 +41,12 @@ static int8_t drv_i2c_WriteBuffer(const uint8_t *Data, uint16_t DataLength);
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd);
 
 /* Private functions ---------------------------------------------------------*/
+static void InitCPAL(void);
+
+void InitI2C(void){
+  /* Start CPAL communication configuration ***********************************/
+  InitCPAL();
+}
 
 static int8_t drv_i2c_ReadBuffer(uint8_t * buf, uint16_t len, uint16_t cmd)
 {
@@ -118,7 +124,7 @@ static int8_t drv_i2c_EOT_Wait(void)
   return drv_i2c_err;
 }
 
-void InitCPAL(void){
+static void InitCPAL(void){
   
   /* Initialize local Reception structures */
   sRxStructure.wNumData = BufferSize;       /* Maximum Number of data to be received */
@@ -178,6 +184,10 @@ void I2C_GetMagic(uint8_t* nr){
   err = drv_i2c_WriteBuffer(tTxBuffer,1);
   tRxBuffer[0] = 0x00;
   err = drv_i2c_ReadBuffer(tRxBuffer,1,REG_MAGICREG);
+  if(err){
+    *nr = 0;
+    return;
+  }
   *nr = tRxBuffer[0];
 }
 
@@ -373,4 +383,27 @@ void I2C_ViewSensorsProcess(void){
       //==================================================================     
   }while(KeyPressed!=CR);
        
+}
+
+void I2CTest (void){
+  uint8_t magicnr;
+  
+  SetBoardAddress(0x30);//Board nr1
+  //Read redister
+  I2C_GetMagic(&magicnr);
+  tTxBuffer[0] = 0x00;
+  drv_i2c_WriteBuffer(tTxBuffer,1); 
+  drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
+
+  //Read redister
+  tTxBuffer[0] = 0x10;
+  drv_i2c_WriteBuffer(tTxBuffer,1); 
+  drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
+  
+  SetBoardAddress(0x35);//Board nr2
+  
+  //Read redister
+  tTxBuffer[0] = 0x10;
+  drv_i2c_WriteBuffer(tTxBuffer,1); 
+  drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
 }
