@@ -26,6 +26,7 @@
 /* External variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 bool GetADCValues(unsigned int* Values,size_t ValuesNr);
+unsigned int GetTSensorADCValue(size_t channel);
 
 #ifdef __cplusplus
 }
