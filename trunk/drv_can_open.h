@@ -1,3 +1,13 @@
+
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __DRV_CAN_OPEN_H
+#define __DRV_CAN_OPEN_H
+
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+/* Exported types ------------------------------------------------------------*/
 // irenginio adresas CAN tinkle (1..254)
 #define DEVICE_CAN_ID   1
 
@@ -61,12 +71,14 @@
     // ARM MCU
     // iraso tipas -  baitai
     typedef unsigned long  RECORD_TYPE;
+    //#define RECORD_TYPE unsigned long
     //#pragma anon_unions
 #endif
 
 
 
-typedef struct Table_struct
+// Table_struct
+  typedef struct 
 {
 	unsigned short  index;
 	unsigned char   flags;
@@ -145,3 +157,9 @@ void CanOpenTimer(void);
 #if SPECIAL_IO_BLOCKS > 0
     void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE val);
 #endif
+    
+#ifdef __cplusplus
+}
+#endif
+
+#endif /*__DRV_CAN_OPEN_H */

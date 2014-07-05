@@ -37,10 +37,12 @@
 #include "menu.h"
 #include "stm32f30x_it.h"
 #include "i2c.h"
-#include "drv_can_open.h"
+//#include "drv_can_open.h"
+#include "can.h"
 #include "drv_stm32_can.h"
 #include "calibration.h"
 #include "ADCmeasurement.h"
+#include "math.h"
 
 
 /** @addtogroup STM32F30x_StdPeriph_Examples
@@ -62,35 +64,24 @@ const SCMD MainMenu[] = {
     NULL,    NULL
 };
 /* Private define ------------------------------------------------------------*/
-#define KEY_PRESSED     0x00
-#define KEY_NOT_PRESSED 0x01
+//#define KEY_PRESSED     0x00
+//#define KEY_NOT_PRESSED 0x01
 
 #define TSK_IDLE          0
 #define TSK_PWR_OFF       2
 #define TSK_CLIBRATION    1
 
-//CAN Baudrate
-//#define CAN_1000 
-#define CAN_500 
-//#define CAN_250 
-//#define CAN_125 
-
-
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 char MagicString[]={"labas"};
 
-
 uint8_t Data[200];
-uint8_t magicnr;
 
 uint8_t KernelTask = TSK_IDLE;
 
-CanTxMsg TxMessage = {0};
-uint8_t KeyNumber = 0x0;
-
-/* Values of Variable1, Variable2 and Variable3 */
-uint16_t VarValue1, VarValue2, VarValue3;
+#ifdef USE_BUTTON 
+  uint8_t KeyNumber = 0x0;
+#endif
 
 /* Virtual address defined by the user: 0xFFFF value is prohibited */
 uint16_t VirtAddVarTab[NB_OF_VAR] = {0x5555, 0x6666, 0x7777};
@@ -102,16 +93,14 @@ __IO uint32_t ActionState = ACTION_NONE;
 unsigned int ADCValues[6];
 float Voltage[6];
 
-/* Private function prototypes -----------------------------------------------*/
-static void CAN_Config(void);
-//void Delay(void);
+uint8_t CurrI2CBoard = 0;
 
+/* Private function prototypes -----------------------------------------------*/
 void SysTick_Configuration(void);
 void kernel(void);
 /* Private functions ---------------------------------------------------------*/
 
 
-void InitCPAL(void);
 /**
   * @brief  Main program.
   * @param  None
@@ -125,52 +114,6 @@ int main(void)
        To reconfigure the default setting of SystemInit() function, refer to
        system_stm32f30x.c file
      */
-  /* Test Virtual EEPROM */ 
-#if 0  
-  //uint16_t varvalue = 0;
-  unsigned char SendBuffer[10];
-  unsigned char ResiveBuffer[10];
-  
-  SysTick_Configuration();
-  
-  /* Unlock the Flash Program Erase controller */
-  FLASH_Unlock();
-
-  /* EEPROM Init */
-  EE_Init();
-#if 0   
-  /* Initialize variables to be used */
-  VarValue1 = 0;
-  VarValue2 = 0;
-  VarValue3 = 0; 
-  
-  /* Store successively many values of the three variables in the EEPROM */
-  /* Store 100 values of Variable1, Variable2 and Variable3 in EEPROM */
-  for (varvalue = 0; varvalue < 100; varvalue++)
-  {
-    VarValue1 += 1;
-    VarValue2 += 2;
-    VarValue3 += 3;
-             
-    EE_WriteVariable(VirtAddVarTab[0], VarValue1);
-    EE_WriteVariable(VirtAddVarTab[1], VarValue2);
-    EE_WriteVariable(VirtAddVarTab[2], VarValue3);
-  }
-  /* read the last stored variables data*/
-  EE_ReadVariable(VirtAddVarTab[0], &VarDataTab[0]);
-  EE_ReadVariable(VirtAddVarTab[1], &VarDataTab[1]);
-  EE_ReadVariable(VirtAddVarTab[2], &VarDataTab[2]);
-#endif  
-  SendBuffer[0] = 0x14;
-  SendBuffer[1] = 0x25;
-  SendBuffer[2] = 0x06;
-  SendBuffer[3] = 0x07;
-  SendBuffer[4] = 0x08;
-  
-  EE_Write_Buff(VirtAddVarTab[0],SendBuffer,5);  
-  EE_Read_Buff(VirtAddVarTab[0],ResiveBuffer,5);
-  
-#endif
   SysTick_Configuration();
   
   //init interpolation
@@ -186,23 +129,20 @@ int main(void)
   
   init_serial();
  
+#ifdef USE_BUTTON 
   /* Configure Push button key */
- // STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO); 
-   
-  /* CAN configuration */
-  CAN_Config();
-  Init_RecordTable(0, 0, (6+4+4), 0);
-  SystemStateChange(0);
+  STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO); 
+#endif
   
-  
-/* Start CPAL communication configuration ***********************************/
-  InitCPAL();
+  InitCAN();
+    
+  InitI2C();
   
   I2C_ScannBoards();
     
   SetBoardAddress(0x01);
 
-/* Infinite loop */
+  /* Infinite loop */
   kernel();
   for(;;);
 }
@@ -219,36 +159,38 @@ void kernel(void)
   uint32_t DevTicksRef5s    = 0;
   uint32_t DevTicksRef10s   = 0;
  
-  //__enable_irq(); 
-
   /* infinite kernel loop */
   for(;;){
     ticks = DevTicks;
     /* =============================================================
      10 msec process 
     ================================================================*/
-    if((ticks - DevTicksRef10ms) >= 10){// 10ms  
-      //KeyScan(); // keyboard scan
-      //key = KeyGet(); // get keyboard values    
+    if((ticks - DevTicksRef10ms) >= 10){// 10ms 
+#ifdef USE_BUTTON
+      KeyScan(); // keyboard scan
+      key = KeyGet(); // get keyboard values  
+#endif
       DevTicksRef10ms = ticks;
+#if 0 
       CAN_MESSAGE msg;
       if(ReceiveCanMsg(&msg)){ 
         //printf("\n\rCAN %x %x %x",msg.Id,msg.len,msg.data[0]);
         CanOpenProtocol(&msg);
         //for(;;);  
       }
+#endif
     } 
     /* =============================================================
      50 msec process 
     ================================================================*/
-    if((ticks - DevTicksRef100ms) >= 50){ // 50ms   
-      //if (key->Pressed[KEYB_CALIBRATION_INDX] > 5 && !key->Lock[KEYB_CALIBRATION_INDX]){
-        //key->Lock[KEYB_CALIBRATION_INDX] = true;
-        //RunCalibrationProcess();
-        //CalibrationProcess(&CalibINDX,&CValues);
-        //cmd_help();
-        //Menu(MainMenu);
-      //}
+    if((ticks - DevTicksRef100ms) >= 50){ // 50ms  
+#ifdef USE_BUTTON
+      if (key->Pressed[KEYB_CALIBRATION_INDX] > 5 && !key->Lock[KEYB_CALIBRATION_INDX]){
+        key->Lock[KEYB_CALIBRATION_INDX] = true;
+        cmd_help();
+        Menu(MainMenu);
+      }
+#endif
       if(IsMagicStr(MagicString)){
         cmd_help();
         Menu(MainMenu);
@@ -267,15 +209,18 @@ void kernel(void)
       double temperature = 0;
       for(size_t Channel=0;Channel<MAXTCHANNEL;Channel++){
         GetValue(Channel,ADCValues[Channel],&temperature);
-        if(temperature<0 || temperature>200){
+        if(temperature<-10 || temperature>200){
           printf("CH%d %d  volt:%.3f temperature: Error\r\n",Channel+1,ADCValues[Channel],Voltage[Channel]); 
         }else{
           printf("CH%d %d  volt:%.3f temperature: %.1f\r\n",Channel+1,ADCValues[Channel],Voltage[Channel],temperature);
+          
+          temperature *= 10;
+          AnalogInput(Channel,(uint16_t)round(temperature));// -> can table 
         }
         
       }
-      double TADCValue = ADC_GetChannelConversionValue(0);
-      double InternalTemper = (1.43-((double)TADCValue*0.80586/1000))/0.0043+25;
+      double TADCValue = ADC_GetChannelConversionValue(0); // Get ADC Value
+      double InternalTemper = (1.43-((double)TADCValue*0.80586/1000))/0.0043+20;//in document +25
       printf("Internal temperature = %0.1f\r\n",InternalTemper);
       if(InternalTemper<10.0){
         STM_HEATING_On();
@@ -283,17 +228,8 @@ void kernel(void)
       if(InternalTemper>45.0){
         STM_HEATING_Off();
       }
-      
-/*      printf("ADC Value1 = %d\r\n",ADC_GetChannelConversionValue(1));
-      printf("ADC Value2 = %d\r\n",ADC_GetChannelConversionValue(2));
-      printf("ADC Value3 = %d\r\n",ADC_GetChannelConversionValue(3));
-      printf("ADC Value4 = %d\r\n",ADC_GetChannelConversionValue(4));
-      printf("ADC Value5 = %d\r\n",ADC_GetChannelConversionValue(5));
-      printf("ADC Value6 = %d\r\n",ADC_GetChannelConversionValue(6));
-*/      
+     
       printf("\r\nEnter '%s' string to enter the main menu",MagicString);
-      //}
-      //
     } 
     
     /* =============================================================
@@ -310,27 +246,6 @@ void kernel(void)
       //TestProg();
       STM_EVAL_LEDToggle(LED1);
       STM_EVAL_LEDToggle(LED2);
-
-#if 0      
-      SetBoardAddress(0x30);//Board nr1
-      //Read redister
-      I2C_GetMagic(&magicnr);
-      tTxBuffer[0] = 0x00;
-      drv_i2c_WriteBuffer(tTxBuffer,1); 
-      drv_i2c_ReadBuffer(tRxBuffer,1,0x00);
-
-      Read redister
-      tTxBuffer[0] = 0x10;
-      drv_i2c_WriteBuffer(tTxBuffer,1); 
-      drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
-      
-      SetBoardAddress(0x35);//Board nr2
-      
-      //Read redister
-      tTxBuffer[0] = 0x10;
-      drv_i2c_WriteBuffer(tTxBuffer,1); 
-      drv_i2c_ReadBuffer(tRxBuffer,4,0x10); 
-#endif
     }
      /* =============================================================
     2,5 sec process
@@ -340,10 +255,23 @@ void kernel(void)
 
       GetADCValues(ADCValues,sizeof(ADCValues)/sizeof(ADCValues[0]));
       for(size_t ch=0;ch<MAXTCHANNEL;ch++){
+        AnalogUnformatedInput(ch,ADCValues[ch]);// -> can table 
         Voltage[ch] = (float)(ADCValues[ch]*0.80586);
         Voltage[ch] = Voltage[ch]/1000;  
       }
+      //Get via I2C data
+      if(I2C_GetBoardsNr()>0){
+        SelectBoardNr(CurrI2CBoard);
         
+        for(size_t ch=0;ch<MAXHCHANNEL;ch++){
+          AnalogInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+MAXTCHANNEL+ch,GetHumidityValue((channel_t)ch)); 
+        }
+        //switch board
+        CurrI2CBoard++;
+        if(CurrI2CBoard>I2C_GetBoardsNr()-1){
+          CurrI2CBoard=0;
+        }
+      }
     }    
     /* =============================================================
     5 sec process
@@ -379,23 +307,6 @@ void kernel(void)
     ================================================================*/
     if((ticks - DevTicksRef10s) >= 10000){ // 10s 
       DevTicksRef10s = ticks;
-      // Test calibration command
-      
-      
-#if 0 
-      SetBoardAddress(0x30);
-      //Write register
-      tTxBuffer[0] = 0x84;
-      tTxBuffer[1] = 0x38;
-      drv_i2c_WriteBuffer(tTxBuffer,2);
-      
-      //Read register
-      tRxBuffer[0] = 0;
-      tTxBuffer[0] = 0x04;
-      drv_i2c_WriteBuffer(tTxBuffer,1); 
-      drv_i2c_ReadBuffer(tRxBuffer,1,0x04); 
-      printf("%X",tRxBuffer[0]);
-#endif
     }
     //================================================================== 
   }  
@@ -423,113 +334,7 @@ void SysTick_Configuration(void)
 }
 
 
-/**
-  * @brief  Configures the CAN.
-  * @param  None
-  * @retval None
-  */
-static void CAN_Config(void)
-{
-  GPIO_InitTypeDef  GPIO_InitStructure; 
-  NVIC_InitTypeDef  NVIC_InitStructure;
-  CAN_InitTypeDef        CAN_InitStructure;
-  CAN_FilterInitTypeDef  CAN_FilterInitStructure;
-    
-  /* CAN GPIOs configuration **************************************************/
 
-  /* Enable GPIO clock */
-  RCC_AHBPeriphClockCmd(CAN_GPIO_CLK, ENABLE);
-
-  /* Connect CAN pins to AF7 */
-  GPIO_PinAFConfig(CAN_GPIO_PORT, CAN_RX_SOURCE, CAN_AF_PORT);
-  GPIO_PinAFConfig(CAN_GPIO_PORT, CAN_TX_SOURCE, CAN_AF_PORT); 
-  
-  /* Configure CAN RX and TX pins */
-  GPIO_InitStructure.GPIO_Pin = CAN_RX_PIN | CAN_TX_PIN;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-  GPIO_Init(CAN_GPIO_PORT, &GPIO_InitStructure);
-
-  /* NVIC configuration *******************************************************/
-  NVIC_InitStructure.NVIC_IRQChannel = USB_LP_CAN1_RX0_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-  
-  /* CAN configuration ********************************************************/  
-  /* Enable CAN clock */
-  RCC_APB1PeriphClockCmd(CAN_CLK, ENABLE);
-  
-  /* CAN register init */
-  CAN_DeInit(CANx);
-  CAN_StructInit(&CAN_InitStructure);
-
-  /* CAN cell init */
-  CAN_InitStructure.CAN_TTCM = DISABLE;
-  CAN_InitStructure.CAN_ABOM = DISABLE;
-  CAN_InitStructure.CAN_AWUM = DISABLE;
-  CAN_InitStructure.CAN_NART = DISABLE;
-  CAN_InitStructure.CAN_RFLM = DISABLE;
-  CAN_InitStructure.CAN_TXFP = DISABLE;
-  CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;
-  CAN_InitStructure.CAN_SJW = CAN_SJW_1tq;
-
-#ifdef CAN_1000
-  /* CAN Baudrate = 1MBps (CAN clocked at 36 MHz) */
-  CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
-  CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
-  CAN_InitStructure.CAN_Prescaler = 2;
-#endif
-
-#ifdef CAN_500  
-  /* Baudrate = 500 Kbps (CAN clocked with 36Mhz)*/
-  CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
-  CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
-  CAN_InitStructure.CAN_Prescaler = 4;
-#endif
-  
-#ifdef CAN_250  
-  /* Baudrate = 250 Kbps (CAN clocked with 36Mhz)*/
-  CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
-  CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
-  CAN_InitStructure.CAN_Prescaler = 8;
-#endif
-  
-#ifdef CAN_125  
-  /* CAN Baudrate = 125kbps (CAN clocked at 36 MHz) */
-  CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
-  CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
-  CAN_InitStructure.CAN_Prescaler = 16;
-#endif
-    
-  CAN_Init(CANx, &CAN_InitStructure);
-
-  /* CAN filter init */
-  CAN_FilterInitStructure.CAN_FilterNumber = 0;
-  CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
-  CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
-  CAN_FilterInitStructure.CAN_FilterIdHigh = 0x0000;
-  CAN_FilterInitStructure.CAN_FilterIdLow = 0x0000;
-  CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x0000;
-  CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x0000;
-  CAN_FilterInitStructure.CAN_FilterFIFOAssignment = 0;
-  CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
-  CAN_FilterInit(&CAN_FilterInitStructure);
-  
-  /* Transmit Structure preparation */
-  TxMessage.StdId = 0x321;
-  TxMessage.ExtId = 0x01;
-  TxMessage.RTR = CAN_RTR_DATA;
-  TxMessage.IDE = CAN_ID_STD;
-  TxMessage.DLC = 1;
-  
-  /* Enable FIFO 0 message pending Interrupt */
-  CAN_ITConfig(CANx, CAN_IT_FMP0, ENABLE);
-  Init_CanIrq();
-}
 
 /**
   * @brief  Turn ON/OFF the dedicated led
@@ -557,20 +362,7 @@ void LED_Display(uint8_t Ledstatus)
   }
 }
 
-/**
-  * @brief  Delay
-  * @param  None
-  * @retval None
-  */
-/*void Delay(void)
-{
-  uint16_t nTime = 0x0000;
 
-  for(nTime = 0; nTime <0xFFF; nTime++)
-  {
-  }
-}
-*/
 #ifdef  USE_FULL_ASSERT
 
 /**

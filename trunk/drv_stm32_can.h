@@ -1,3 +1,5 @@
+#include "drv_can_open.h"
+
 #define CAN1_RX_BUF_SIZE    32
 #define CAN1_TX_BUF_SIZE    32
 

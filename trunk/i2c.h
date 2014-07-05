@@ -68,6 +68,8 @@ uint16_t GetADCValue(channel_t Channal);
 uint16_t GetHumidityValue(channel_t Channal);
 
 void I2C_ViewSensorsProcess(void);
+
+void InitI2C(void);
 /* External variables --------------------------------------------------------*/
 
 
