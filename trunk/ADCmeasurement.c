@@ -85,6 +85,20 @@ bool GetADCValues(unsigned int* Values,size_t ValuesNr){
   return true;
   //qsort(tempValues, TEMP_VALUES_SIZE, sizeof(unsigned int), comp);
 }
+
+unsigned int GetTSensorADCValue(size_t channel){
+  unsigned int retval = 0;
+    
+  if((channel-1) > CHANNELS_NR)
+    return 0; 
+  
+  for(size_t i=0;i<TEMP_VALUES_SIZE;i++)
+  {
+     tempValues[0][i] = ADC_GetChannelConversionValue(channel+1);//+1 skip internal temperature sensor
+  }
+  retval = findMode(tempValues[0], TEMP_VALUES_SIZE);
+  return retval;
+}
 /*----------------------------------------------------------------------------
  * end of file
  *---------------------------------------------------------------------------*/

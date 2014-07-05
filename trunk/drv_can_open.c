@@ -1,5 +1,9 @@
 #include "drv_can_open.h"
 #include "drv_stm32_can.h"
+#include "calibration.h"
+#include "ADCmeasurement.h"
+#include "i2c.h"
+#include "delay.h"
 
 
 #define FLAG_READ_ONLY   0x01
@@ -832,10 +836,37 @@ void SystemStateChange(RECORD_TYPE val)
     //....... prideti ko reikia
 }
 
+/**
+  * @brief  Calibration function via CAN.
+  * @param  bank: by dafault always 0 
+  * @param  index: sensor number 0.. 
+  * @param  val: calibration point number (for hunidity sensor 0..8)
+  * @retval None
+  */
 void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE val){
-  //bank = 0
-  //index - Analog input number
-  //val - 0..8 calibration point
-  //TODO: add calibration point
+  
+  if(index<MAXTCHANNEL){//Temperature sensors
+    CalibrationTypeDef TemperCalibrationValues;
+    ReadCalibration(&TemperCalibrationValues,index);
+    if(val==0){
+      TemperCalibrationValues.cbCalibrValue0=GetTSensorADCValue(index);
+    }else{
+      TemperCalibrationValues.cbCalibrValue100=GetTSensorADCValue(index);
+    }
+    //save calibration values
+    WriteCalibration(&TemperCalibrationValues,index);
+  }else{//Hunidity sensors
+    if(I2C_GetBoardsNr()>0){
+      //select board
+      if(index<(MAXTCHANNEL+MAXHCHANNEL)){
+        SelectBoardNr(0);
+      }else if(index>(MAXTCHANNEL+MAXHCHANNEL-1)){
+        SelectBoardNr(1);
+      }
+      //save calibration value
+      SaveHCalibrationPoint((index-MAXTCHANNEL)<MAXHCHANNEL ? index-MAXTCHANNEL : index-MAXTCHANNEL-MAXHCHANNEL,val);
+      Delay(15);
+    }
+  }
 }
 
