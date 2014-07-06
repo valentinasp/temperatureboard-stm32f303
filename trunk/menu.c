@@ -33,8 +33,8 @@ const SCMD ChannelMenu[] = {
    "2",cmd_channal2,
    "3",cmd_channal3,
    "4",cmd_channal4,
-   "5",cmd_channal4,
-   "6",cmd_channal4,
+   "5",cmd_channal5,
+   "6",cmd_channal6,
    NULL,NULL
 };
 
