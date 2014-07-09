@@ -855,6 +855,7 @@ void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE va
     }
     //save calibration values
     WriteCalibration(&TemperCalibrationValues,index);
+    LoadCalibrationData();
   }else{//Hunidity sensors
     if(I2C_GetBoardsNr()>0){
       //select board
