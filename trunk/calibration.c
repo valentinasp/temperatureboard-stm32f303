@@ -127,7 +127,6 @@ bool EraseCalibration(void){
 }
 
 void TCalibrationProcess(channel_t Channal){
-#if 1
   uint32_t ticks;
   uint32_t DevTicksRef100ms = 0; 
   uint32_t DevTicksRef10ms  = 0; 
@@ -254,7 +253,6 @@ void TCalibrationProcess(channel_t Channal){
        return;
      }
   }
-#endif
 }
 
 void HCalibrationProcess(channel_t Channal){
