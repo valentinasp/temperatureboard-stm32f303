@@ -233,7 +233,7 @@ void SaveHCalibrationPoint(uint8_t channel,uint8_t cpoint){
   drv_i2c_WriteBuffer(tTxBuffer,2);
 }
 
-uint16_t GetADCValue(channel_t Channal){
+uint16_t GetHADCValue(channel_t Channal){
   uint16_t retval = 0;
   memset(tRxBuffer,0,sizeof(uint16_t));
   switch (Channal){

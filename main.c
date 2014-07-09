@@ -171,7 +171,7 @@ void kernel(void)
       key = KeyGet(); // get keyboard values  
 #endif
       DevTicksRef10ms = ticks;
-#if 0 
+#if 1 
       CAN_MESSAGE msg;
       if(ReceiveCanMsg(&msg)){ 
         //printf("\n\rCAN %x %x %x",msg.Id,msg.len,msg.data[0]);
@@ -265,6 +265,9 @@ void kernel(void)
         
         for(size_t ch=0;ch<MAXHCHANNEL;ch++){
           AnalogInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+MAXTCHANNEL+ch,GetHumidityValue((channel_t)ch)); 
+          Delay(5);
+          AnalogUnformatedInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+MAXTCHANNEL+ch,GetHADCValue((channel_t)ch));// -> can table 
+          Delay(5);  
         }
         //switch board
         CurrI2CBoard++;
