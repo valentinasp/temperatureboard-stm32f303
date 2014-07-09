@@ -25,14 +25,14 @@
 #define DIGITAL_OUTPUT_BLOCKS   0
 
 // analoginiu iejimu skaicius
-#define ANALOG_INPUTS           8
+#define ANALOG_INPUTS           18
 
 // analoginiu isejimu skaicius
 #define ANALOG_OUTPUTS          0
 
 // analoginiu isejimu skaicius
 #define SPECIAL_IO_BLOCKS       1
-#define SPECIAL_IO_SUBBLOCK     9
+#define SPECIAL_IO_SUBBLOCK     18
 
 
 // timeriu f-jos iskvietimo periodiskumas, ms
@@ -60,7 +60,7 @@
     #endif
 #endif
 
-#define MAX_TABLE_RECORD  19+(DIGITAL_INPUT_BLOCKS*6)+(DIGITAL_OUTPUT_BLOCKS*3)+(ANALOG_INPUTS*5)+ANALOG_OUTPUTS+(SPECIAL_IO_BLOCKS*SPECIAL_IO_SUBBLOCK)
+#define MAX_TABLE_RECORD  19+(DIGITAL_INPUT_BLOCKS*6)+(DIGITAL_OUTPUT_BLOCKS*3)+(ANALOG_INPUTS*6)+ANALOG_OUTPUTS+(SPECIAL_IO_BLOCKS*SPECIAL_IO_SUBBLOCK)
 
 
 #ifdef __18CXX

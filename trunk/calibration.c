@@ -373,7 +373,7 @@ void HCalibrationProcess(channel_t Channal){
         ================================================================*/
         if((ticks - DevTicksRef2_5s) >= 2500){ // 2,5 s      
           DevTicksRef2_5s = ticks;
-          CurrADCValues[Channal] = GetADCValue(Channal);
+          CurrADCValues[Channal] = GetHADCValue(Channal);
           CurrVoltage = (float)(CurrADCValues[Channal]*0.80586);
           CurrVoltage = CurrVoltage/1000;
           //SetGenerator(&GeneratorVal);

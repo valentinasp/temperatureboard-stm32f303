@@ -7,7 +7,7 @@ static void CAN_hw_rd (CAN_MESSAGE *msg);
 
 
 CAN_MESSAGE  Can1RxBuf[CAN1_RX_BUF_SIZE],Can1TxBuf[CAN1_TX_BUF_SIZE];
-volatile unsigned int Can1_RxIn,Can1_RxOut,Can1_TxIn,Can1_TxOut,Can1Status;
+unsigned int Can1_RxIn,Can1_RxOut,Can1_TxIn,Can1_TxOut,Can1Status;
 
 
 // leisti trukius
