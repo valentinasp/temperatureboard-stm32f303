@@ -839,7 +839,7 @@ void SystemStateChange(RECORD_TYPE val)
 /**
   * @brief  Calibration function via CAN.
   * @param  bank: by dafault always 0 
-  * @param  index: sensor number 0.. 
+  * @param  index: sensor number from 0.. 
   * @param  val: calibration point number (for hunidity sensor 0..8)
   * @retval None
   */

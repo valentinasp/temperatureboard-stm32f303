@@ -272,21 +272,25 @@ uint16_t GetHumidityValue(channel_t Channal){
     case Channel1:
       tTxBuffer[0] = REG_HUMIDITY0REG;
       drv_i2c_WriteBuffer(tTxBuffer,1); 
+      Delay(10);
       drv_i2c_ReadBuffer(tRxBuffer,2,REG_HUMIDITY0REG);
       break;
     case Channel2:
       tTxBuffer[0] = REG_HUMIDITY1REG;
-      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_WriteBuffer(tTxBuffer,1);
+      Delay(10);
       drv_i2c_ReadBuffer(tRxBuffer,2,REG_HUMIDITY1REG);
       break;
     case Channel3:
       tTxBuffer[0] = REG_HUMIDITY2REG;
       drv_i2c_WriteBuffer(tTxBuffer,1); 
+      Delay(10);
       drv_i2c_ReadBuffer(tRxBuffer,2,REG_HUMIDITY2REG);
       break;
     case Channel4:
       tTxBuffer[0] = REG_HUMIDITY3REG;
-      drv_i2c_WriteBuffer(tTxBuffer,1); 
+      drv_i2c_WriteBuffer(tTxBuffer,1);
+      Delay(10);
       drv_i2c_ReadBuffer(tRxBuffer,2,REG_HUMIDITY3REG);
       break;
     default:
@@ -304,6 +308,7 @@ void I2C_ViewSensorsProcess(void){
   uint32_t DevTicksRef100ms = 0; 
   uint32_t DevTicksRef10ms  = 0; 
   uint32_t DevTicksRef500ms = 0;
+  uint32_t DevTicksRef300ms = 0;
   uint32_t DevTicksRef1s    = 0;
   uint32_t DevTicksRef2_5s  = 0;
   uint32_t DevTicksRef5s    = 0;
@@ -325,6 +330,27 @@ void I2C_ViewSensorsProcess(void){
       ================================================================*/
       if((ticks - DevTicksRef100ms) >= 100){ // 100ms   
         DevTicksRef100ms = ticks;
+      }
+      /* =============================================================
+       300 msec process 
+      ================================================================*/
+      if((ticks - DevTicksRef300ms) >= 300){ // 300ms   
+        DevTicksRef300ms = ticks;
+        CurrHumidityValues[Channal] = GetHumidityValue(Channal);
+        switch (Channal){
+          case Channel1:
+            Channal = Channel2;
+            break;
+          case Channel2:
+            Channal = Channel3;
+            break;
+          case Channel3:
+            Channal = Channel4;
+            break;
+          case Channel4:
+            Channal = Channel1;
+            break;
+        }
       }
       
       /* =============================================================
@@ -348,22 +374,6 @@ void I2C_ViewSensorsProcess(void){
       ================================================================*/
       if((ticks - DevTicksRef1s) >= 1000){ // 1s      
         DevTicksRef1s = ticks;
-        CurrHumidityValues[Channal] = GetHumidityValue(Channal);
-        switch (Channal){
-          case Channel1:
-            Channal = Channel2;
-            break;
-          case Channel2:
-            Channal = Channel3;
-            break;
-          case Channel3:
-            Channal = Channel4;
-            break;
-          case Channel4:
-            Channal = Channel1;
-            break;
-        } 
-
       }
       /* =============================================================
       2,5 sec process
