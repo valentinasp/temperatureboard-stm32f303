@@ -98,6 +98,8 @@ uint8_t CurrI2CBoard = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SysTick_Configuration(void);
 void kernel(void);
+void WWDG_Init(void);
+void WWDG_CounterReset(void);
 /* Private functions ---------------------------------------------------------*/
 
 
@@ -137,11 +139,11 @@ int main(void)
   InitCAN();
     
   InitI2C();
-  
+  Delay(1000);
   I2C_ScannBoards();
     
-  SetBoardAddress(0x01);
-
+  //SetBoardAddress(0x01);
+  //WWDG_Init();
   /* Infinite loop */
   kernel();
   for(;;);
@@ -162,6 +164,7 @@ void kernel(void)
   /* infinite kernel loop */
   for(;;){
     ticks = DevTicks;
+    WWDG_CounterReset();
     /* =============================================================
      10 msec process 
     ================================================================*/
@@ -191,6 +194,7 @@ void kernel(void)
         Menu(MainMenu);
       }
 #endif
+      
       if(IsMagicStr(MagicString)){
         cmd_help();
         Menu(MainMenu);
@@ -394,5 +398,45 @@ void assert_failed(uint8_t* file, uint32_t line)
 /**
   * @}
   */
+void WWDG_Init(void){
+  
+  /* WWDG configuration */
+  /* Enable WWDG clock */
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_WWDG, ENABLE);
 
+  /* WWDG clock counter = (PCLK1/4096)/8 = 244 Hz (~4 ms)  */
+  WWDG_SetPrescaler(WWDG_Prescaler_8);
+
+  /* Set Window value to 65 */
+  WWDG_SetWindowValue(127);
+
+  /* Enable WWDG and set counter value to 127, WWDG timeout = ~4 ms * 64 = 262 ms */
+  WWDG_Enable(127);
+  
+//  /* WWDG configuration */
+//  /* Enable WWDG clock */
+//  RCC_APB1PeriphClockCmd(RCC_APB1Periph_WWDG, ENABLE);
+//
+//  /* WWDG clock counter = (PCLK1 (36MHz)/4096)/8 = 1098Hz (~910 us)  */
+//  WWDG_SetPrescaler(WWDG_Prescaler_8);
+//
+//  /* Set Window value to 80; WWDG counter should be refreshed only when the counter
+//    is below 80 (and greater than 64) otherwise a reset will be generated */
+//  WWDG_SetWindowValue(80);
+//  /* Enable WWDG and set counter value to 127, WWDG timeout = ~910 us * 64 = 58.24 ms 
+//    In this case the refresh window is: ~910 * (127-80) = 42.7ms < refresh window < ~910 * 64 = 58.2ms
+//  */
+//  WWDG_Enable(127);
+  /* Clear EWI flag */
+  WWDG_ClearFlag();
+  /* Enable EW interrupt */
+  WWDG_EnableIT();
+}
+
+void WWDG_CounterReset(void){
+    /* Update WWDG counter */
+    WWDG_SetCounter(127);
+    /* Clear EWI flag */
+    WWDG_ClearFlag();
+}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

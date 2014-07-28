@@ -206,6 +206,23 @@ void USART1_IRQHandler(void)
     }
   }
 }
+
+/*******************************************************************************
+* Function Name  : WWDG_IRQHandler
+* Description    : This function handles WWDG interrupt request.
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void WWDG_IRQHandler(void)
+{
+  /* Update WWDG counter */
+  WWDG_SetCounter(0x7F);
+
+  /* Clear EWI flag */
+  WWDG_ClearFlag();
+}
+
 /**
   * @brief  This function handles CAN1 RX0 request.
   * @param  None
