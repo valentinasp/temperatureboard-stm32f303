@@ -8,6 +8,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 //#include "flash_if.h"
+#include "stm32f30x_flash.h"
 #include "calibration.h"
 #include "delay.h"
 #include "interpolation.h"
@@ -62,7 +63,9 @@ void InitCalibration(void){
   GPIO_Init(sCALIB_ERRORLED_GPIO_PORT, &GPIO_InitStructure); 
   
   /* EEPROM Init */
+  FLASH_Unlock();
   EE_Init();
+  FLASH_Lock();
 }
 
 

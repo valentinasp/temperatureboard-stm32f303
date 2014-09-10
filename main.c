@@ -117,7 +117,7 @@ int main(void)
        system_stm32f30x.c file
      */
   SysTick_Configuration();
-  
+  InitCalibration();
   //init interpolation
   InitInterpolationValues(MAXTCHANNEL,MAXPOINTS);  //init points
   LoadCalibrationData();

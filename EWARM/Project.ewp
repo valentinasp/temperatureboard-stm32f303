@@ -163,7 +163,7 @@
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>31</version>
+        <version>30</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -402,10 +402,6 @@
           <name>CCOptStrategySlave</name>
           <version>0</version>
           <state>0</state>
-        </option>
-        <option>
-          <name>CCGuardCalls</name>
-          <state>1</state>
         </option>
       </data>
     </settings>
@@ -980,20 +976,20 @@
         <option>
           <name>Input variant</name>
           <version>3</version>
-          <state>6</state>
+          <state>0</state>
         </option>
         <option>
           <name>Input description</name>
-          <state>No specifier n, no float nor long long, no scan set, no assignment suppressing.</state>
+          <state>Automatic choice of formatter.</state>
         </option>
         <option>
           <name>Output variant</name>
           <version>2</version>
-          <state>5</state>
+          <state>0</state>
         </option>
         <option>
           <name>Output description</name>
-          <state>No specifier a, A, no specifier n, no float nor long long.</state>
+          <state>Automatic choice of formatter.</state>
         </option>
         <option>
           <name>GOutputBinary</name>
@@ -1028,7 +1024,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>7.20.1.7306</state>
+          <state>7.10.1.6733</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1052,7 +1048,7 @@
         </option>
         <option>
           <name>OGBufferedTerminalOutput</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>GenStdoutInterface</name>
@@ -1104,7 +1100,7 @@
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>31</version>
+        <version>30</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1127,7 +1123,7 @@
         </option>
         <option>
           <name>CCListCFile</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCListCMnemonics</name>
@@ -1135,7 +1131,7 @@
         </option>
         <option>
           <name>CCListCMessages</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCListAssFile</name>
@@ -1245,8 +1241,8 @@
           <state>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\Libraries\STM32F30x_I2C_CPAL_Driver\inc</state>
           <state>$PROJ_DIR$\..\Utilities\STM32_EVAL\Common</state>
-          <state>$PROJ_DIR$\..\Utilities\CAN\</state>
-          <state>$PROJ_DIR$\..\Utilities\STM32_EVAL\STM32303C_EVAL</state>
+          <state>          $PROJ_DIR$\..\Utilities\CAN\</state>
+          <state>          $PROJ_DIR$\..\Utilities\STM32_EVAL\STM32303C_EVAL</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1351,10 +1347,6 @@
           <name>CCOptStrategySlave</name>
           <version>0</version>
           <state>0</state>
-        </option>
-        <option>
-          <name>CCGuardCalls</name>
-          <state>1</state>
         </option>
       </data>
     </settings>
@@ -1538,11 +1530,11 @@
         </option>
         <option>
           <name>OCOutputOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>Project.srec</state>
+          <state>TemperatureBoard.s19</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1550,7 +1542,7 @@
         </option>
         <option>
           <name>OOCObjCopyEnable</name>
-          <state>0</state>
+          <state>1</state>
         </option>
       </data>
     </settings>
@@ -1632,7 +1624,7 @@
         </option>
         <option>
           <name>IlinkMapFile</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IlinkLogFile</name>
@@ -1895,6 +1887,9 @@
   <group>
     <name>CAN</name>
     <file>
+      <name>$PROJ_DIR$\..\can.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\drv_can_open.c</name>
     </file>
     <file>
@@ -2016,6 +2011,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\adc.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\ADCmeasurement.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\calibration.c</name>
