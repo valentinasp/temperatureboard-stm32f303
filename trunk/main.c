@@ -176,11 +176,8 @@ void kernel(void)
       DevTicksRef10ms = ticks;
 #if 1 
       CAN_MESSAGE msg;
-      if(ReceiveCanMsg(&msg)){ 
-        //printf("\n\rCAN %x %x %x",msg.Id,msg.len,msg.data[0]);
-        CanOpenProtocol(&msg);
-        //for(;;);  
-      }
+      if(ReceiveCanMsg(&msg))  CanOpenProtocol(&msg);
+      CanOpenTimer();
 #endif
     } 
     /* =============================================================
