@@ -16,9 +16,9 @@
 /* Private define ------------------------------------------------------------*/
 //CAN Baudrate
 //#define CAN_1000 
-#define CAN_500 
+//#define CAN_500 
 //#define CAN_250 
-//#define CAN_125
+#define CAN_125
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 CanTxMsg TxMessage = {0};

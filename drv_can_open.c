@@ -1,9 +1,10 @@
-#include "drv_can_open.h"
-#include "drv_stm32_can.h"
-#include "calibration.h"
-#include "ADCmeasurement.h"
-#include "i2c.h"
-#include "delay.h"
+#ifdef __18CXX
+    // Microchip MCU
+    #include "def.h"
+#else
+    #include "drv_can_open.h"
+    #include "drv_stm32_can.h"
+#endif
 
 
 #define FLAG_READ_ONLY   0x01
@@ -16,7 +17,6 @@
 TABLE_RECORD TableRecord[MAX_TABLE_RECORD];
 
 unsigned short SystemState;
-volatile unsigned int HeartBeatTimer,GuardTimer;//,RecordHeartBeatTime,RecordGuardTime;
 
 
 static void RegisterRecord(unsigned short adr, unsigned char f, RECORD_TYPE def_val, unsigned short *index);
@@ -33,6 +33,7 @@ static void WriteToCanMsg(CAN_MESSAGE *msg);
 #if DIGITAL_OUTPUT_BLOCKS>0
     static void DigitalOutput(unsigned short bank, RECORD_TYPE val, unsigned char mode);
     static void UpdateDigitalOutputs(void);
+    static void ClearDigitalOutputs(void);
 #endif
 
 //====================================================================================================
@@ -44,15 +45,9 @@ void Init_RecordTable(char digital_input, char digital_output, char analog_input
     #if SPECIAL_IO_BLOCKS > 0
         unsigned short k;
     #endif
-    
-    if(digital_input  > DIGITAL_INPUT_BLOCKS)  digital_input  = DIGITAL_INPUT_BLOCKS;
-    if(digital_output > DIGITAL_OUTPUT_BLOCKS) digital_output = DIGITAL_OUTPUT_BLOCKS;
-    if(analog_input   > ANALOG_INPUTS)         analog_input   = ANALOG_INPUTS;
-    if(analog_output  > ANALOG_OUTPUTS)        analog_output  = ANALOG_OUTPUTS;
-    
-    i = 0;
-    HeartBeatTimer = GuardTimer = 0;
-    
+   
+    i=0;
+        
     RegisterRecord(0x0000,FLAG_READ_ONLY,0x0300,&i);                 // protokolo ID
     RegisterRecord(0x0100,FLAG_READ_ONLY,0x0002,&i);                 // Prietaiso ID / serijinis numeris
     RegisterRecord(0x0101,FLAG_READ_ONLY,HARDWARE_VER,&i);           // prietaiso aparatines dalies versija
@@ -127,7 +122,6 @@ void Init_RecordTable(char digital_input, char digital_output, char analog_input
            for(k=0; k<SPECIAL_IO_SUBBLOCK; k++) RegisterRecord(adr+k,FLAG_READ_WRITE,0x0000,&i); // spec. iejimas/isejimas
         }
     #endif
-   
 }
 
 
@@ -186,38 +180,39 @@ static unsigned short TableWrite(unsigned short adr, RECORD_TYPE val, unsigned c
             else 
             {
                 TableRecord[i].val = val;
-                //if(adr == 0x0500) RecordHeartBeatTime = val;   // statuso periodiskumo siuntimo inicializavimas
-                //if(adr == 0x0501) RecordGuardTime = val;
-                if(adr == 0x0502) GuardTimer = 0;                // centrinio valdiklio veikimo sekimas 
-                if(adr == 0x0400)                                // SystemState?
+                //if(adr == 0x0501)
+                //if(adr == 0x0502) GuardTimer = 0;               // centrinio valdiklio veikimo sekimas 
+                if(adr == 0x0400)                               // SystemState?
                 {
-                    if(flag == 0) SystemStateChange(val);
-                    GuardTimer = 0;
+                    if(flag == 0) SystemStateChange(val << 4);
+                    //GuardTimer = 0;
                 }
-               // if((adr == 0x1004))                             // periodinio iejimu siuntimo nustatymas
-               // {
-               //     DigInputTimer = 0;
-               //     RecordDigInputTime = val;
-                //}
 
                 // pasizymeti apie skaitmeniniu isejimu atnaujinima   
                 #if DIGITAL_OUTPUT_BLOCKS>0
-                    if((adr & 0xFF00) == 0x2000) DigitalOutput(0, val, adr & 0xF);
+                    if((adr & 0xFF00) == 0x2000) 
+                    {
+                        if(flag == 0) DigitalOutput(0, val, adr & 0xF);
+                    }
                 #endif
                 #if DIGITAL_OUTPUT_BLOCKS>1
-                    if((adr & 0xFF00) == 0x2100) DigitalOutput(1, val, adr & 0xF);
+                    if((adr & 0xFF00) == 0x2100) 
+                    {
+                        if(flag == 0) DigitalOutput(1, val, adr & 0xF);
+                    }
                 #endif
                 #if DIGITAL_OUTPUT_BLOCKS>2
-                    if((adr & 0xFF00) == 0x2200) DigitalOutput(2, val, adr & 0xF);
+                    if((adr & 0xFF00) == 0x2200) 
+                    {
+                        if(flag == 0) DigitalOutput(2, val, adr & 0xF);
+                    }
                 #endif
                 #if DIGITAL_OUTPUT_BLOCKS>3
-                    if((adr & 0xFF00) == 0x2300) DigitalOutput(3, val, adr & 0xF);
+                    if((adr & 0xFF00) == 0x2300) 
+                    {
+                        if(flag == 0) DigitalOutput(3, val, adr & 0xF);
+                    }
                 #endif
-                
-                #if SPECIAL_IO_BLOCKS > 0
-                    if((adr & 0xF000) == 0x5000) SpecialIO_Output((adr >> 16) & 0xF, adr & 0xFF, val);
-                #endif
-                
                 // pasizymeti apie analoginiu isejimu isejimu atnaujinima
                 // if(i == Index_AnalogOutput1) TableRecordStatus |= A_O_UPDATED;
             }
@@ -234,12 +229,12 @@ static unsigned short TableWrite(unsigned short adr, RECORD_TYPE val, unsigned c
 void CanOpenProtocol(CAN_MESSAGE *msg)
 {
     unsigned short adr;
-    switch(msg->id1)
+    switch(msg->id.byte1)
     {
         case 0x01: //skaitymas
             if((msg->len & 0x0F) >= 2)
             {
-                GuardTimer = 0;
+                TableWrite(0x0502, 0, 1); // istrinti vladiklio sekimo timeri
                 adr = ((unsigned short)msg->data[0] << 8) | (unsigned short)msg->data[1];
                 ReadToCanMsg(adr,msg);
                 SendCanMsg(msg);
@@ -247,7 +242,7 @@ void CanOpenProtocol(CAN_MESSAGE *msg)
             break;
       
         case 0x02: //atsakymas i skaitymo komanda
-            if(msg->id0 == DEVICE_CAN_ID)
+            if(msg->id.byte0 == DEVICE_CAN_ID)
             {
                 // tinkle yra antras irenginys su tuo paciu ID
                 TableWrite(0x0300, 0x0001, 1);
@@ -262,8 +257,7 @@ void CanOpenProtocol(CAN_MESSAGE *msg)
         case 0x03: //rasyti
             if((msg->len & 0x0F) >= 3)
             {   
-                GuardTimer = 0;
-                
+                TableWrite(0x0502, 0, 1); // istrinti vladiklio sekimo timeri 
                 if((msg->data[0] == 0x05) && (msg->data[1] == 0x02)) 
                 {
                     WriteToCanMsg(msg);
@@ -277,7 +271,7 @@ void CanOpenProtocol(CAN_MESSAGE *msg)
             break;
       
         case 0x04: //atsakymas i rasymo komanda
-            if(msg->id0 == DEVICE_CAN_ID)
+            if(msg->id.byte0 == DEVICE_CAN_ID)
             {
                 // tinkle yra antras irenginys su tuo paciu ID
                 TableWrite(0x0300, 0x0001, 1);
@@ -289,7 +283,7 @@ void CanOpenProtocol(CAN_MESSAGE *msg)
       
         case 0x05: // nuotolinis hyperterminalas
             #ifdef ENABLE_REMOTE_HYPERTERMINAL
-            if(msg->id0 == DEVICE_CAN_ID)
+            if(msg->id.byte0 == DEVICE_CAN_ID)
             {
                 if(WorkSettings & BIT_REMOTE_HYPERTERM)
                 {
@@ -350,9 +344,10 @@ static unsigned char ReadToCanMsg(unsigned short adr, CAN_MESSAGE *msg)
     unsigned char res;
   
     res = TableRead(adr,&temp);
-    msg->id1     = 0x02;
-    msg->id0     = DEVICE_CAN_ID;
-    msg->len     = 7;
+    msg->id.byte1     = 0x02;
+    msg->id.byte0     = DEVICE_CAN_ID;
+    if(sizeof(RECORD_TYPE) == 4) msg->len  = 7;
+    else msg->len  = 5;
     msg->data[0] = (unsigned char)(adr >> 8);
     msg->data[1] = (unsigned char)adr;
     msg->data[2] = 0;
@@ -373,9 +368,14 @@ static unsigned char ReadToCanMsg(unsigned short adr, CAN_MESSAGE *msg)
             {
                 msg->data[3] = (unsigned char)(temp >> 24);
                 msg->data[4] = (unsigned char)(temp >> 16);
+                msg->data[5] = (unsigned char)(temp >> 8);
+                msg->data[6] = (unsigned char)temp;
             }
-            msg->data[5] = (unsigned char)(temp >> 8);
-            msg->data[6] = (unsigned char)temp;
+            else
+            {
+                msg->data[3] = (unsigned char)(temp >> 8);
+                msg->data[4] = (unsigned char)temp;
+            }    
             break;
         case 1:  // irasas lenteleje neegzistuoja
             TableWrite(0x0301, 0x0001, 1);
@@ -402,7 +402,7 @@ static void WriteToCanMsg(CAN_MESSAGE *msg)
     unsigned long temp = 0;
     unsigned char res;
  
-    if(msg->len >= 3) temp = (RECORD_TYPE)msg->data[2];
+    if(msg->len >= 3) temp = (unsigned long)msg->data[2];
     if(msg->len >= 4) temp = (temp << 8) | (unsigned long)msg->data[3];
     if(msg->len >= 5) temp = (temp << 8) | (unsigned long)msg->data[4];
     if(msg->len >= 6) temp = (temp << 8) | (unsigned long)msg->data[5];
@@ -410,9 +410,11 @@ static void WriteToCanMsg(CAN_MESSAGE *msg)
     val = (RECORD_TYPE)temp;
     temp = ((unsigned long)msg->data[0] << 8) | (unsigned long)msg->data[1];
     res = TableWrite((unsigned short)temp, val, 0);
+    if(temp == 0x0501) TableWrite(0x0502, 0, 1); // istrinti taimeri
+    if(temp == 0x0500) TableWrite(0x0503, 0, 1); // istrinti taimeri
 
-    msg->id1 = 0x04;
-    msg->id0 = DEVICE_CAN_ID;
+    msg->id.byte1 = 0x04;
+    msg->id.byte0 = DEVICE_CAN_ID;
     msg->len = 4;
 
     switch(res)
@@ -514,14 +516,14 @@ static void DigitalOutput(unsigned short bank, RECORD_TYPE val, unsigned char mo
 {    
     unsigned short adr;    
     RECORD_TYPE temp;
-    
+     
     adr = (bank*0x100) + 0x2000 ;
     if(mode == 0) // nustatomi visi bitai
     { 
         TableWrite(adr, val, 1); // issaugom verte
         if((SystemState & 0xF0) == SYS_STATE_OPERATIONAL)
         {   
-            ClearOutputs(bank, 0xFF);
+            ClearOutputs(bank, MAX_RECORD_DIGIT);
             SetOutputs(bank, val); 
         }
     }
@@ -548,38 +550,37 @@ static void DigitalOutput(unsigned short bank, RECORD_TYPE val, unsigned char mo
 static void UpdateDigitalOutputs(void)
 {
     RECORD_TYPE temp;
+    unsigned char i;
+    unsigned short adr;
+    
     if((SystemState & 0xF0) == SYS_STATE_OPERATIONAL)
     {
-        #if DIGITAL_OUTPUT_BLOCKS>0
-            ClearOutputs(0,0xFF);
-            if(TableRead(0x2000, &temp) != 0) return; 
-            SetOutputs(0, temp);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>1
-            ClearOutputs(1,0xFF);
-            if(TableRead(0x2100, &temp) != 0) return; 
-            SetOutputs(1, temp);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>2
-            ClearOutputs(2,0xFF);
-            if(TableRead(0x2200, &temp) != 0) return; 
-            SetOutputs(2, temp);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>3
-            ClearOutputs(3,0xFF);
-            if(TableRead(0x2300, &temp) != 0) return; 
-            SetOutputs(3, temp);
-        #endif
+        for(i=0; i<DIGITAL_OUTPUT_BLOCKS; i++)
+        {
+            ClearOutputs(i,MAX_RECORD_DIGIT);
+            adr = ((unsigned short)i*0x100) + 0x2000 ;
+            if(TableRead(adr, &temp) == 0) SetOutputs(i, temp);
+        }                    
     }
 } 
+
+
+//===================================================================================
+// isjungti visus skaimeninius isejimus
+//-----------------------------------------------------------------------------------
+static void ClearDigitalOutputs(void)
+{
+    char i;
+    for(i=0; i<DIGITAL_OUTPUT_BLOCKS; i++) ClearOutputs(i, MAX_RECORD_DIGIT);
+}    
+
 #endif
 
 
-
-#if ANALOG_INPUTS>0
 //===================================================================================
 // ivesti analoginio iejimo verte
 //-----------------------------------------------------------------------------------
+#if ANALOG_INPUTS>0
 void AnalogInput(unsigned short bank, RECORD_TYPE input)
 {   
     RECORD_TYPE old,temp;
@@ -603,17 +604,11 @@ void AnalogInput(unsigned short bank, RECORD_TYPE input)
         if((old > temp) && (input < temp)) flag |= 1;
     }
 
+
     // tikrinamas ar siusti is karto
     if(TableRead(adr+4, &temp) != 0) return; 
-    if(sizeof(RECORD_TYPE) == 2) 
-    {
-        if(temp == 0xFFFF) flag |= 1; 
-    }
-    else
-    {
-        if(temp == 0xFFFFFFFF) flag |= 1; 
-    }
-    
+    if(temp == MAX_RECORD_DIGIT) flag |= 1;
+
     TableWrite(adr, input, 1); // issaugom verte
     
     if((SystemState & 0xF0) == SYS_STATE_OPERATIONAL)
@@ -621,6 +616,7 @@ void AnalogInput(unsigned short bank, RECORD_TYPE input)
         if(flag) SendAnalogInput(bank);
     }
 }
+
 
 //===================================================================================
 // ivesti analoginio iejimo verte, neformatuota ADC verte
@@ -642,13 +638,45 @@ void CanOpenTimer(void)
 {
     RECORD_TYPE rec,timer;
     CAN_MESSAGE msg;
-    unsigned short i,adr;
+    unsigned short adr;
+    
+    if((SystemState & 0xF0) == SYS_STATE_INIT) return;
     
     if(TableRead(0x0502, &rec) == 0) TableWrite(0x0502, rec+CAN_OPEN_TIMER_TICK_MS, 1); 
     if(TableRead(0x0503, &rec) == 0) TableWrite(0x0503, rec+CAN_OPEN_TIMER_TICK_MS, 1); 
     
+  
+    // statuso periodinis siuntimas
+    if((TableRead(0x0500, &rec) == 0) && (TableRead(0x0503, &timer) == 0))
+    {
+        if(rec)
+        {
+            if(timer > rec)
+            {             
+                TableWrite(0x0503, 0, 1);
+                ReadToCanMsg(0x0400,&msg);
+                SendCanMsg(&msg);
+            }
+        }
+    }
+        
+    // ar centrinis valdiklis atsiliepia?
+    if((TableRead(0x0501, &rec) == 0) && (TableRead(0x0502, &timer) == 0))
+    {
+        if(rec)
+        {
+            if(timer > rec)
+            {
+                TableWrite(0x0502, 0, 1);
+                TableWrite(0x0503, 0, 1);
+                TableWrite(0x0300, 0x0002, 1); // klaidos kodas
+                if((SystemState & 0xF0) != SYS_STATE_STOPPED) SystemStateChange(SYS_STATE_STOPPED);
+            }
+        }
+    } 
+    
     #if ANALOG_INPUTS>0
-        for(i=0; i<ANALOG_INPUTS; i++)
+        for(int i=0; i<ANALOG_INPUTS; i++)
         {
             adr = (i*0x100) + 0x3000;
             // timeris
@@ -660,32 +688,17 @@ void CanOpenTimer(void)
             // ar siusti paketa?
             if(TableRead(adr+4, &rec) == 0)
             {
-                if(sizeof(RECORD_TYPE)==2)
+                if((rec != 0) && (rec != MAX_RECORD_DIGIT)) 
                 {
-                    if((rec != 0) && (rec != 0xFFFF)) 
+                    if(timer > rec)
                     {
-                        if(timer > rec)
-                        {
-                            SendAnalogInput(i);
-                            TableWrite(adr+5, 0, 1); 
-                        }
+                        SendAnalogInput(i);
+                        TableWrite(adr+5, 0, 1); 
                     }
-                }
-                else
-                {
-                    if((rec != 0) && (rec != 0xFFFFFFFF)) 
-                    {
-                        if(timer > rec)
-                        {
-                            SendAnalogInput(i);
-                            TableWrite(adr+5, 0, 1); 
-                        }
-                    } 
                 }    
             }            
         }
-    #endif
-    
+    #endif 
     #if DIGITAL_INPUT_BLOCKS>0
         for(i=0; i<DIGITAL_INPUT_BLOCKS; i++)
         {
@@ -699,69 +712,36 @@ void CanOpenTimer(void)
             // ar siusti paketa?
             if(TableRead(adr+4, &rec) == 0)
             {
-                if(sizeof(RECORD_TYPE)==2)
+                if((rec != 0) && (rec != MAX_RECORD_DIGIT)) 
                 {
-                    if((rec != 0) && (rec != 0xFFFF)) 
+                    if(timer > rec)
                     {
-                        if(timer > rec)
-                        {
-                            SendDigitalInput(i);
-                            TableWrite(adr+5, 0, 1); 
-                        }
+                        SendDigitalInput(i);
+                        TableWrite(adr+5, 0, 1); 
                     }
                 }
-                else
-                {
-                    if((rec != 0) && (rec != 0xFFFFFFFF)) 
-                    {
-                        if(timer > rec)
-                        {
-                            SendDigitalInput(i);
-                            TableWrite(adr+5, 0, 1); 
-                        }
-                    } 
-                }    
-            }            
+            }          
         }
     #endif
     
-    if((SystemState & 0xF0) == SYS_STATE_OPERATIONAL)
-    {     
-        // statuso periodinis siuntimas
-        if((TableRead(0x0500, &rec) == 0) && (TableRead(0x0503, &timer) == 0))
-        {
-            if(rec)
-            {
-                if(timer > rec)
-                {   
-                    TableWrite(0x0503, 0, 1);
-                    ReadToCanMsg(0x0400,&msg);
-                    SendCanMsg(&msg);
-                }
-            }
-        }
-        
-        // ar centrinis valdiklis atsiliepia?
-        if((TableRead(0x0501, &rec) == 0) && (TableRead(0x0502, &timer) == 0))
-        {
-            if(rec)
-            {
-                if(timer > rec)
-                {
-                    TableWrite(0x0502, 0, 1);
-                    TableWrite(0x0503, 0, 1);
-                    TableWrite(0x0300, 0x0002, 1); // klaidos kodas
-                    ReadToCanMsg(0x0300,&msg);
-                    SendCanMsg(&msg);
-                    SystemStateChange(3);          // stabdom                   
-                }
-            }
-        } 
-    }
-
+    
 }
   
 
+//==============================================================================================
+// siusti starto statusa, istrinti klaidas
+//----------------------------------------------------------------------------------------------
+void CanOpenSendStartStatus(void)
+{
+    CAN_MESSAGE msg;    
+    TableWrite(0x0200, 0x0001, 1); // starto statusas
+    TableWrite(0x0300, 0x0000, 1); // klaidos kodas
+    //TableWrite(0x0400, SystemState>>4, 1);         
+    ReadToCanMsg(0x0200,&msg);
+    SendCanMsg(&msg);
+    //ReadToCanMsg(0x0400,&msg);
+    //SendCanMsg(&msg);
+}    
 
 //==============================================================================================
 // irenginio busenos keitimas
@@ -769,105 +749,45 @@ void CanOpenTimer(void)
 void SystemStateChange(RECORD_TYPE val)
 {  
     CAN_MESSAGE msg;    
-    if(val == 0) 
+    
+
+    if(val == SYS_STATE_INIT) 
     {
         SystemState = SYS_STATE_INIT;
-        TableWrite(0x0200, 0x0001, 1); // starto statusas
-        TableWrite(0x0300, 0x0000, 1); // klaidos kodas
-        TableWrite(0x0400, 0x0001, 1); 
-        
-        ReadToCanMsg(0x0200,&msg);
-        SendCanMsg(&msg);
-        ReadToCanMsg(0x0400,&msg);
-        SendCanMsg(&msg);
     }
-    if(val == 2) 
+
+    if(val == SYS_STATE_OPERATIONAL) 
     {
         SystemState = SYS_STATE_OPERATIONAL;
-        TableWrite(0x0400, 0x0002, 1); 
+        TableWrite(0x0400, val>>4, 1); 
+        ReadToCanMsg(0x0400,&msg);
+        SendCanMsg(&msg);
         #if DIGITAL_OUTPUT_BLOCKS>0
             UpdateDigitalOutputs();
         #endif
         #if ANALOG_OUTPUTS>0
-            UpdateDigitalOutputs();
+            UpdateAnalogOutputs();
         #endif
-        ReadToCanMsg(0x0400,&msg);
-        SendCanMsg(&msg);
     }
-    if(val == 3) 
+    
+    if(val == SYS_STATE_STOPPED) 
     {
         SystemState = SYS_STATE_STOPPED;
-        TableWrite(0x0400, 0x0003, 1); 
-        #if DIGITAL_OUTPUT_BLOCKS>0
-            ClearOutputs(0, 0xFFFFFFFF);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>1
-            ClearOutputs(1, 0xFFFFFFFF);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>2
-            ClearOutputs(2, 0xFFFFFFFF);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>3
-            ClearOutputs(3, 0xFFFFFFFF);
-        #endif
+        TableWrite(0x0400, val>>4, 1); 
         ReadToCanMsg(0x0400,&msg);
         SendCanMsg(&msg);
+        //ClearDigitalOutputs();
     }
-    if(val == 4) 
+    
+    if(val == SYS_STATE_ERROR) 
     {
         SystemState = SYS_STATE_ERROR;
-        TableWrite(0x0400, 0x0004, 1); 
-        #if DIGITAL_OUTPUT_BLOCKS>0
-            ClearOutputs(0, 0xFFFFFFFF);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>1
-            ClearOutputs(1, 0xFFFFFFFF);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>2
-            ClearOutputs(2, 0xFFFFFFFF);
-        #endif
-        #if DIGITAL_OUTPUT_BLOCKS>3
-            ClearOutputs(3, 0xFFFFFFFF);
-        #endif
+        TableWrite(0x0400, val>>4, 1); 
         ReadToCanMsg(0x0400,&msg);
         SendCanMsg(&msg);
+        //ClearDigitalOutputs();
     }
     //if(val == 5) StartBooloader();// iejimas i bootloaderi
     //....... prideti ko reikia
-}
-
-/**
-  * @brief  Calibration function via CAN.
-  * @param  bank: by dafault always 0 
-  * @param  index: sensor number from 0.. 
-  * @param  val: calibration point number (for hunidity sensor 0..8)
-  * @retval None
-  */
-void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE val){
-  
-  if(index<MAXTCHANNEL){//Temperature sensors
-    CalibrationTypeDef TemperCalibrationValues;
-    ReadCalibration(&TemperCalibrationValues,index);
-    if(val==0){
-      TemperCalibrationValues.cbCalibrValue0=GetTSensorADCValue(index);
-    }else{
-      TemperCalibrationValues.cbCalibrValue100=GetTSensorADCValue(index);
-    }
-    //save calibration values
-    WriteCalibration(&TemperCalibrationValues,index);
-    LoadCalibrationData();
-  }else{//Hunidity sensors
-    if(I2C_GetBoardsNr()>0){
-      //select board
-      if(index<(MAXTCHANNEL+MAXHCHANNEL)){
-        SelectBoardNr(0);
-      }else if(index>(MAXTCHANNEL+MAXHCHANNEL-1)){
-        SelectBoardNr(1);
-      }
-      //save calibration value
-      SaveHCalibrationPoint((index-MAXTCHANNEL)<MAXHCHANNEL ? index-MAXTCHANNEL : index-MAXTCHANNEL-MAXHCHANNEL,val);
-      Delay(15);
-    }
-  }
 }
 

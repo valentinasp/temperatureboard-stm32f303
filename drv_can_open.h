@@ -3,25 +3,28 @@
 #ifndef __DRV_CAN_OPEN_H
 #define __DRV_CAN_OPEN_H
 
+#define  DEVICE_CAN_ID  5
+
+
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-/* Exported types ------------------------------------------------------------*/
-// irenginio adresas CAN tinkle (1..254)
-#define DEVICE_CAN_ID   1
-
 
 // irenginio aparaturine versija
-#define HARDWARE_VER    0x100
+#ifndef HARDWARE_VER 
+    #define HARDWARE_VER    0x100
+#endif
 //irenginio softwaro versija
-#define SOFTWARE_VER    0x100
+#ifndef SOFTWARE_VER
+    #define SOFTWARE_VER    0x100
+#endif
 
 
-// skaitmeniniu iejimu bloku (po 16 arba 32 iejimu) skaicius
+// skaitmeniniu iejimu bloku po 32 skaicius
 #define DIGITAL_INPUT_BLOCKS    0
 
-// skaitmeniniu isejimu bloku (po 16 arba 32 iejimu)  skaicius
+// skaitmeniniu isejimu bloku po 32 skaicius
 #define DIGITAL_OUTPUT_BLOCKS   0
 
 // analoginiu iejimu skaicius
@@ -30,7 +33,7 @@
 // analoginiu isejimu skaicius
 #define ANALOG_OUTPUTS          0
 
-// analoginiu isejimu skaicius
+// kalibravimo blokai
 #define SPECIAL_IO_BLOCKS       1
 #define SPECIAL_IO_SUBBLOCK     18
 
@@ -45,20 +48,10 @@
 
 
 #define SYS_STATE_INIT              0x00
-#define SYS_STATE_PREOPERATIONAL    0x10
-#define SYS_STATE_OPERATIONAL       0x20
-#define SYS_STATE_STOPPED           0x30
-#define SYS_STATE_ERROR             0x40
+#define SYS_STATE_OPERATIONAL       0x10
+#define SYS_STATE_STOPPED           0x20
+#define SYS_STATE_ERROR             0x30
 
-
-#if SPECIAL_IO_BLOCKS > 0
-    #if SPECIAL_IO_SUBBLOCK == 0
-        #define SPECIAL_IO_SUBBLOCK 1
-    #endif
-    #ifndef SPECIAL_IO_SUBBLOCK
-        #define SPECIAL_IO_SUBBLOCK 1
-    #endif
-#endif
 
 #define MAX_TABLE_RECORD  19+(DIGITAL_INPUT_BLOCKS*6)+(DIGITAL_OUTPUT_BLOCKS*3)+(ANALOG_INPUTS*6)+ANALOG_OUTPUTS+(SPECIAL_IO_BLOCKS*SPECIAL_IO_SUBBLOCK)
 
@@ -67,18 +60,17 @@
     // Microchip MCU
     // iraso tipas - 2 baitai
     typedef unsigned short  RECORD_TYPE;
+    #define MAX_RECORD_DIGIT    0xFFFF
 #else
     // ARM MCU
     // iraso tipas -  baitai
     typedef unsigned long  RECORD_TYPE;
-    //#define RECORD_TYPE unsigned long
-    //#pragma anon_unions
+    #define MAX_RECORD_DIGIT    0xFFFFFFFF
+//    #pragma anon_unions
 #endif
 
 
-
-// Table_struct
-  typedef struct 
+typedef struct Table_struct
 {
 	unsigned short  index;
 	unsigned char   flags;
@@ -93,10 +85,8 @@
 #define CAN_ANSW_WRITE_MSG  0x04
 #define CAN_HYPERTERM_MSG   0x05
 
-#ifdef __arm__
-    #pragma anon_unions
-#endif
 
+#ifndef __18CXX
 typedef struct
 {
     union
@@ -104,11 +94,11 @@ typedef struct
         unsigned int Id;	    // CAN Message ID (11-bit or 29-bit)
         struct
         {
-            unsigned char id0;
-            unsigned char id1;
-            unsigned char id2;
-            unsigned char id3;
-        };    
+            unsigned char byte0;
+            unsigned char byte1;
+            unsigned char byte2;
+            unsigned char byte3;
+        } id;    
     };
     union
     {
@@ -133,14 +123,14 @@ typedef struct
         char data[8];
     };
 } CAN_MESSAGE;
+#endif
 
-
-
+extern unsigned short SystemState;
 void Init_RecordTable(char digital_input, char digital_output, char analog_input, char analog_output);
 void CanOpenProtocol(CAN_MESSAGE *msg);
 void SystemStateChange(RECORD_TYPE val);
 void CanOpenTimer(void);
-//void SendCanMsg(CAN_MESSAGE *msg);
+void CanOpenSendStartStatus(void);
 
 
 #if DIGITAL_INPUT_BLOCKS>0
