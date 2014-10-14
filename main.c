@@ -9,6 +9,7 @@
   * @attention
   *
   * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
+
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -176,7 +177,7 @@ void kernel(void)
       DevTicksRef10ms = ticks;
 #if 1 
       CAN_MESSAGE msg;
-      if(ReceiveCanMsg(&msg))  CanOpenProtocol(&msg);
+      while(ReceiveCanMsg(&msg))  CanOpenProtocol(&msg);
       CanOpenTimer();
 #endif
     } 
@@ -216,7 +217,10 @@ void kernel(void)
           printf("CH%d %d  volt:%.3f temperature: %.1f\r\n",Channel+1,ADCValues[Channel],Voltage[Channel],temperature);
           
           temperature *= 10;
+//------------------------------------------------------------------------------
+          AnalogUnformatedInput(Channel,ADCValues[Channel]);
           AnalogInput(Channel,(uint16_t)round(temperature));// -> can table 
+//------------------------------------------------------------------------------
         }
         
       }
@@ -265,10 +269,12 @@ void kernel(void)
         SelectBoardNr(CurrI2CBoard);
         
         for(size_t ch=0;ch<MAXHCHANNEL;ch++){
-          AnalogInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+MAXTCHANNEL+ch,GetHumidityValue((channel_t)ch)); 
-          Delay(5);
-          AnalogUnformatedInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+MAXTCHANNEL+ch,GetHADCValue((channel_t)ch));// -> can table 
-          Delay(5);  
+//------------------------------------------------------------------------------------------
+          AnalogInput(6 + ch,GetHumidityValue((channel_t)ch));
+          Delay(5);           
+          AnalogUnformatedInput(6 + ch,GetHADCValue((channel_t)ch));// -> can table 
+          Delay(5); 
+//------------------------------------------------------------------------------------------ 
         }
         //switch board
         CurrI2CBoard++;
