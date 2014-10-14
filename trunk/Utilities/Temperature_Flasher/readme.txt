@@ -1,7 +1,10 @@
-Ontario Power Controller Flasher tool. 
+Temperature board Controller Flasher tool. 
 
-- attach USB2UART cable to connector X4 (Ontario).
+- Attach USB2UART cable to connector X3 (Mainboard).(look at picture "BoardPCB.png" )  
+- Put on J2(Boot 0) and J1(Reset) jumpers
 - Edit COM port number in start.bat file.
-- run start.bat
-- Turn on Ontario board.
-- follow onscreen instructions.
+- Run start.bat
+- Turn on board.
+- Remove J1(Reset) jumper
+- Follow onscreen instructions.
+

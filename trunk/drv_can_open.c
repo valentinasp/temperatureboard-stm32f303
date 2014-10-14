@@ -4,6 +4,10 @@
 #else
     #include "drv_can_open.h"
     #include "drv_stm32_can.h"
+    #include "calibration.h"
+    #include "ADCmeasurement.h"
+    #include "i2c.h"
+    #include "delay.h"
 #endif
 
 
@@ -192,29 +196,21 @@ static unsigned short TableWrite(unsigned short adr, RECORD_TYPE val, unsigned c
                 #if DIGITAL_OUTPUT_BLOCKS>0
                     if((adr & 0xFF00) == 0x2000) 
                     {
-                        if(flag == 0) DigitalOutput(0, val, adr & 0xF);
+                        if(flag == 0) DigitalOutput((adr >> 8) & 0xF, val, adr & 0xF);
                     }
                 #endif
-                #if DIGITAL_OUTPUT_BLOCKS>1
-                    if((adr & 0xFF00) == 0x2100) 
+                #if ANALOG_OUTPUTS>0
+                    if((adr & 0xFF00) == 0x4000) 
                     {
-                        if(flag == 0) DigitalOutput(1, val, adr & 0xF);
+                        if(flag == 0) AnalogOutput(adr & 0xFF, val);
                     }
                 #endif
-                #if DIGITAL_OUTPUT_BLOCKS>2
-                    if((adr & 0xFF00) == 0x2200) 
+                #if SPECIAL_IO_BLOCKS>0
+                    if((adr & 0xFF00) == 0x5000) 
                     {
-                        if(flag == 0) DigitalOutput(2, val, adr & 0xF);
+                        if(flag == 0) SpecialIO_Output(0, adr & 0xFF, val);
                     }
                 #endif
-                #if DIGITAL_OUTPUT_BLOCKS>3
-                    if((adr & 0xFF00) == 0x2300) 
-                    {
-                        if(flag == 0) DigitalOutput(3, val, adr & 0xF);
-                    }
-                #endif
-                // pasizymeti apie analoginiu isejimu isejimu atnaujinima
-                // if(i == Index_AnalogOutput1) TableRecordStatus |= A_O_UPDATED;
             }
             return 0;  //OK
         }
@@ -229,6 +225,7 @@ static unsigned short TableWrite(unsigned short adr, RECORD_TYPE val, unsigned c
 void CanOpenProtocol(CAN_MESSAGE *msg)
 {
     unsigned short adr;
+    if((msg->id.byte0 != DEVICE_CAN_ID) && (msg->id.byte0 != 0)) return;
     switch(msg->id.byte1)
     {
         case 0x01: //skaitymas
@@ -789,5 +786,40 @@ void SystemStateChange(RECORD_TYPE val)
     }
     //if(val == 5) StartBooloader();// iejimas i bootloaderi
     //....... prideti ko reikia
+}
+
+/**
+  * @brief  Calibration function via CAN.
+  * @param  bank: by dafault always 0 
+  * @param  index: sensor number from 0.. 
+  * @param  val: calibration point number (for humidity sensor 0..8)
+  * @retval None
+  */
+void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE val){
+  
+  if(index<MAXTCHANNEL){//Temperature sensors
+    CalibrationTypeDef TemperCalibrationValues;
+    ReadCalibration(&TemperCalibrationValues,index);
+    if(val==0){
+      TemperCalibrationValues.cbCalibrValue0=GetTSensorADCValue(index);
+    }else{
+      TemperCalibrationValues.cbCalibrValue100=GetTSensorADCValue(index);
+    }
+    //save calibration values
+    WriteCalibration(&TemperCalibrationValues,index);
+    LoadCalibrationData();
+  }else{//Hunidity sensors
+    if(I2C_GetBoardsNr()>0){
+      //select board
+      if(index<(MAXTCHANNEL+MAXHCHANNEL)){
+        SelectBoardNr(0);
+      }else if(index>(MAXTCHANNEL+MAXHCHANNEL-1)){
+        SelectBoardNr(1);
+      }
+      //save calibration value
+      SaveHCalibrationPoint((index-MAXTCHANNEL)<MAXHCHANNEL ? index-MAXTCHANNEL : index-MAXTCHANNEL-MAXHCHANNEL,val);
+      Delay(15);
+    }
+  }
 }
 
