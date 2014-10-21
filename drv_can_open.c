@@ -16,7 +16,7 @@
 #define FLAG_READ_WRITE  0x03
 
 
-
+extern volatile unsigned int Can1_RxIn,Can1_RxOut,Can1_TxIn,Can1_TxOut,Can1Status;
 
 TABLE_RECORD TableRecord[MAX_TABLE_RECORD];
 
@@ -28,6 +28,7 @@ static unsigned char TableRead(unsigned short adr, RECORD_TYPE *val);
 static unsigned short TableWrite(unsigned short adr, RECORD_TYPE val, unsigned char flag);
 static unsigned char ReadToCanMsg(unsigned short adr, CAN_MESSAGE *msg);
 static void WriteToCanMsg(CAN_MESSAGE *msg);
+void CanOpenError(int err);
 #if DIGITAL_INPUT_BLOCKS>0
     static void SendDigitalInput(unsigned short bank);
 #endif
@@ -463,6 +464,14 @@ static void SendAnalogInput(unsigned short bank)
     adr = (bank*0x100) + 0x3000 ;
     if(!ReadToCanMsg(adr, &msg)) SendCanMsg(&msg);
 }
+
+static void SendUnformatedAnalogInput(unsigned short bank)
+{
+    CAN_MESSAGE msg;
+    unsigned short adr;
+    adr = (bank*0x100) + 0x3000 ;
+    if(!ReadToCanMsg(adr+1, &msg)) SendCanMsg(&msg);
+}
 #endif
 
 
@@ -583,6 +592,19 @@ void AnalogInput(unsigned short bank, RECORD_TYPE input)
     RECORD_TYPE old,temp;
     unsigned short adr;
     unsigned char flag = 0;
+CAN_MESSAGE msg;
+msg.id.byte1     = 0x02;
+msg.id.byte0     = DEVICE_CAN_ID;
+msg.len  = 7;
+msg.data[0] = 0x60;
+msg.data[1] = 0x00;
+msg.data[2] = bank;
+msg.data[3] = (unsigned char)(input >> 24);
+msg.data[4] = (unsigned char)(input >> 16);
+msg.data[5] = (unsigned char)(input >> 8);
+msg.data[6] = (unsigned char)input;    
+msg.data[7] = 0;  
+SendCanMsg(&msg);   
     
     adr = (bank*0x100) + 0x3000;
     if(TableRead(adr, &old) != 0) return;
@@ -621,9 +643,32 @@ void AnalogInput(unsigned short bank, RECORD_TYPE input)
 void AnalogUnformatedInput(unsigned short bank, RECORD_TYPE input)
 {
     unsigned short adr;
+    RECORD_TYPE temp;
+
+CAN_MESSAGE msg;
+msg.id.byte1     = 0x02;
+msg.id.byte0     = DEVICE_CAN_ID;
+msg.len  = 7;
+msg.data[0] = 0x60;
+msg.data[1] = 0x01;
+msg.data[2] = bank;
+msg.data[3] = (unsigned char)(input >> 24);
+msg.data[4] = (unsigned char)(input >> 16);
+msg.data[5] = (unsigned char)(input >> 8);
+msg.data[6] = (unsigned char)input;    
+msg.data[7] = 0;  
+SendCanMsg(&msg); 
+
     
     adr = (bank*0x100) + 0x3000;
     TableWrite(adr+1, input, 1); // issaugom verte
+    
+    // tikrinamas ar siusti is karto
+    if(TableRead(adr+4, &temp) != 0) return; 
+    if(temp == MAX_RECORD_DIGIT)
+    {
+        if((SystemState & 0xF0) == SYS_STATE_OPERATIONAL)  SendUnformatedAnalogInput(bank);
+    }
 }
 #endif
 
@@ -638,6 +683,27 @@ void CanOpenTimer(void)
     unsigned short adr;
     
     if((SystemState & 0xF0) == SYS_STATE_INIT) return;
+    
+    
+    if(Can1Status & CAN_RX_SOFT_OVERFLOW) 
+    {
+        Can1Status &= ~CAN_RX_SOFT_OVERFLOW;
+        Can1_RxIn = Can1_RxOut = 0;
+        CanOpenError(1);
+    }
+    if(Can1Status & CAN_RX_HARD_OVERFLOW) 
+    {      
+        Can1Status &= ~CAN_RX_HARD_OVERFLOW;
+        CanOpenError(2);
+    }
+    if(Can1Status & CAN_TX_SOFT_OVERFLOW) 
+    {
+        Can1Status &= ~CAN_TX_SOFT_OVERFLOW;
+        Can1_TxIn = Can1_TxOut = 0;
+        CanOpenError(3);
+    }
+
+        
     
     if(TableRead(0x0502, &rec) == 0) TableWrite(0x0502, rec+CAN_OPEN_TIMER_TICK_MS, 1); 
     if(TableRead(0x0503, &rec) == 0) TableWrite(0x0503, rec+CAN_OPEN_TIMER_TICK_MS, 1); 
@@ -690,6 +756,7 @@ void CanOpenTimer(void)
                     if(timer > rec)
                     {
                         SendAnalogInput(i);
+                        SendUnformatedAnalogInput(i);
                         TableWrite(adr+5, 0, 1); 
                     }
                 }    
@@ -795,31 +862,37 @@ void SystemStateChange(RECORD_TYPE val)
   * @param  val: calibration point number (for humidity sensor 0..8)
   * @retval None
   */
-void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE val){
-  
-  if(index<MAXTCHANNEL){//Temperature sensors
-    CalibrationTypeDef TemperCalibrationValues;
-    ReadCalibration(&TemperCalibrationValues,index);
-    if(val==0){
-      TemperCalibrationValues.cbCalibrValue0=GetTSensorADCValue(index);
-    }else{
-      TemperCalibrationValues.cbCalibrValue100=GetTSensorADCValue(index);
+void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE val)
+{
+    if(index < MAXTCHANNEL) //Temperature sensors
+    {
+        CalibrationTypeDef TemperCalibrationValues;
+        ReadCalibration(&TemperCalibrationValues,index);
+        if(val==0)  TemperCalibrationValues.cbCalibrValue0   = GetTSensorADCValue(index);
+        else        TemperCalibrationValues.cbCalibrValue100 = GetTSensorADCValue(index);
+        
+        //save calibration values
+        WriteCalibration(&TemperCalibrationValues,index);
+        LoadCalibrationData();
     }
-    //save calibration values
-    WriteCalibration(&TemperCalibrationValues,index);
-    LoadCalibrationData();
-  }else{//Hunidity sensors
-    if(I2C_GetBoardsNr()>0){
-      //select board
-      if(index<(MAXTCHANNEL+MAXHCHANNEL)){
-        SelectBoardNr(0);
-      }else if(index>(MAXTCHANNEL+MAXHCHANNEL-1)){
-        SelectBoardNr(1);
-      }
-      //save calibration value
-      SaveHCalibrationPoint((index-MAXTCHANNEL)<MAXHCHANNEL ? index-MAXTCHANNEL : index-MAXTCHANNEL-MAXHCHANNEL,val);
-      Delay(15);
+    else  //Hunidity sensors  
+    {
+        if(I2C_GetBoardsNr() > 0)
+        {
+            //select board
+            if(index < (MAXTCHANNEL+MAXHCHANNEL)) SelectBoardNr(0);
+            else if(index > (MAXTCHANNEL+MAXHCHANNEL-1)) SelectBoardNr(1);
+            //save calibration value
+            SaveHCalibrationPoint((index-MAXTCHANNEL)<MAXHCHANNEL ? index-MAXTCHANNEL : index-MAXTCHANNEL-MAXHCHANNEL,val);
+            Delay(15);
+        }
     }
-  }
 }
 
+void CanOpenError(int err)
+{
+    CAN_MESSAGE msg;
+    TableWrite(0x0300, (err << 8) | 4, 1); 
+    ReadToCanMsg(0x0300,&msg);
+    SendCanMsg(&msg); 
+}

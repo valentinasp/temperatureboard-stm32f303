@@ -9,7 +9,6 @@
   * @attention
   *
   * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
-
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -146,6 +145,9 @@ int main(void)
   //SetBoardAddress(0x01);
   //WWDG_Init();
   /* Infinite loop */
+  CanOpenSendStartStatus();
+  SystemStateChange(SYS_STATE_STOPPED);
+  
   kernel();
   for(;;);
 }
@@ -161,7 +163,8 @@ void kernel(void)
   uint32_t DevTicksRef2_5s  = 0;
   uint32_t DevTicksRef5s    = 0;
   uint32_t DevTicksRef10s   = 0;
- 
+  CAN_MESSAGE msg;
+    
   /* infinite kernel loop */
   for(;;){
     ticks = DevTicks;
@@ -175,8 +178,7 @@ void kernel(void)
       key = KeyGet(); // get keyboard values  
 #endif
       DevTicksRef10ms = ticks;
-#if 1 
-      CAN_MESSAGE msg;
+#if 1     
       while(ReceiveCanMsg(&msg))  CanOpenProtocol(&msg);
       CanOpenTimer();
 #endif
@@ -218,8 +220,8 @@ void kernel(void)
           
           temperature *= 10;
 //------------------------------------------------------------------------------
-          AnalogUnformatedInput(Channel,ADCValues[Channel]);
-          AnalogInput(Channel,(uint16_t)round(temperature));// -> can table 
+          AnalogInput((unsigned short)Channel,(RECORD_TYPE)round(temperature)); 
+          AnalogUnformatedInput((unsigned short)Channel,(RECORD_TYPE)ADCValues[Channel]);        
 //------------------------------------------------------------------------------
         }
         
@@ -269,11 +271,17 @@ void kernel(void)
         SelectBoardNr(CurrI2CBoard);
         
         for(size_t ch=0;ch<MAXHCHANNEL;ch++){
-//------------------------------------------------------------------------------------------
-          AnalogInput(6 + ch,GetHumidityValue((channel_t)ch));
-          Delay(5);           
-          AnalogUnformatedInput(6 + ch,GetHADCValue((channel_t)ch));// -> can table 
+//--------------------------------------------------------------------------------------                    
+          //AnalogInput(6 + ch,GetHumidityValue((channel_t)ch));
+          //Delay(5);           
+          //AnalogUnformatedInput(6 + ch,GetHADCValue((channel_t)ch));// -> can table 
+          //Delay(5); 
+            
+          AnalogInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+6+ch,GetHumidityValue((channel_t)ch)); 
+          Delay(5);
+          AnalogUnformatedInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+6+ch,GetHADCValue((channel_t)ch));// -> can table 
           Delay(5); 
+            
 //------------------------------------------------------------------------------------------ 
         }
         //switch board
