@@ -89,7 +89,7 @@ bool GetADCValues(unsigned int* Values,size_t ValuesNr){
 unsigned int GetTSensorADCValue(size_t channel){
   unsigned int retval = 0;
     
-  if((channel-1) > CHANNELS_NR)
+  if((channel+1) > CHANNELS_NR)
     return 0; 
   
   for(size_t i=0;i<TEMP_VALUES_SIZE;i++)

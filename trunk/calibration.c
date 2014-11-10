@@ -455,5 +455,11 @@ void HCalibrationProcess(channel_t Channal){
   }
 }
 
+void SaveHumPoint(uint8_t channel,uint8_t cpoint){
+  if(channel>MAXHCHANNEL) return;
+  if(cpoint>cp90procent) return;
+  SaveHCalibrationPoint(channel,cpoint);
+}
+
 
 
