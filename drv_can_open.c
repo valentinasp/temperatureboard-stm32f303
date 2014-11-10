@@ -592,6 +592,7 @@ void AnalogInput(unsigned short bank, RECORD_TYPE input)
     RECORD_TYPE old,temp;
     unsigned short adr;
     unsigned char flag = 0;
+#ifdef DEBUG    
 CAN_MESSAGE msg;
 msg.id.byte1     = 0x02;
 msg.id.byte0     = DEVICE_CAN_ID;
@@ -604,8 +605,8 @@ msg.data[4] = (unsigned char)(input >> 16);
 msg.data[5] = (unsigned char)(input >> 8);
 msg.data[6] = (unsigned char)input;    
 msg.data[7] = 0;  
-SendCanMsg(&msg);   
-    
+//SendCanMsg(&msg);   
+#endif    
     adr = (bank*0x100) + 0x3000;
     if(TableRead(adr, &old) != 0) return;
 
@@ -645,6 +646,7 @@ void AnalogUnformatedInput(unsigned short bank, RECORD_TYPE input)
     unsigned short adr;
     RECORD_TYPE temp;
 
+#ifdef DEBUG  
 CAN_MESSAGE msg;
 msg.id.byte1     = 0x02;
 msg.id.byte0     = DEVICE_CAN_ID;
@@ -657,8 +659,8 @@ msg.data[4] = (unsigned char)(input >> 16);
 msg.data[5] = (unsigned char)(input >> 8);
 msg.data[6] = (unsigned char)input;    
 msg.data[7] = 0;  
-SendCanMsg(&msg); 
-
+//SendCanMsg(&msg); 
+#endif
     
     adr = (bank*0x100) + 0x3000;
     TableWrite(adr+1, input, 1); // issaugom verte
@@ -883,7 +885,8 @@ void SpecialIO_Output(unsigned short bank, unsigned short index,  RECORD_TYPE va
             if(index < (MAXTCHANNEL+MAXHCHANNEL)) SelectBoardNr(0);
             else if(index > (MAXTCHANNEL+MAXHCHANNEL-1)) SelectBoardNr(1);
             //save calibration value
-            SaveHCalibrationPoint((index-MAXTCHANNEL)<MAXHCHANNEL ? index-MAXTCHANNEL : index-MAXTCHANNEL-MAXHCHANNEL,val);
+            Delay(15);
+            SaveHumPoint((index-MAXTCHANNEL)<MAXHCHANNEL ? index-MAXTCHANNEL : index-MAXTCHANNEL-MAXHCHANNEL,val);
             Delay(15);
         }
     }

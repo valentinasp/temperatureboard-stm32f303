@@ -219,11 +219,11 @@ void kernel(void)
           printf("CH%d %d  volt:%.3f temperature: %.1f\r\n",Channel+1,ADCValues[Channel],Voltage[Channel],temperature);
           
           temperature *= 10;
-//------------------------------------------------------------------------------
+        }
+        //------ Temperature to CAN sending --------------------------------------------
           AnalogInput((unsigned short)Channel,(RECORD_TYPE)round(temperature)); 
           AnalogUnformatedInput((unsigned short)Channel,(RECORD_TYPE)ADCValues[Channel]);        
-//------------------------------------------------------------------------------
-        }
+        //------------------------------------------------------------------------------
         
       }
       double TADCValue = ADC_GetChannelConversionValue(0); // Get ADC Value
@@ -277,9 +277,9 @@ void kernel(void)
           //AnalogUnformatedInput(6 + ch,GetHADCValue((channel_t)ch));// -> can table 
           //Delay(5); 
             
-          AnalogInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+6+ch,GetHumidityValue((channel_t)ch)); 
+          AnalogInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+MAXTCHANNEL+ch,GetHumidityValue((channel_t)ch)); 
           Delay(5);
-          AnalogUnformatedInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+6+ch,GetHADCValue((channel_t)ch));// -> can table 
+          AnalogUnformatedInput((MAXHCHANNEL*(size_t)CurrI2CBoard)+MAXTCHANNEL+ch,GetHADCValue((channel_t)ch));// -> can table 
           Delay(5); 
             
 //------------------------------------------------------------------------------------------ 

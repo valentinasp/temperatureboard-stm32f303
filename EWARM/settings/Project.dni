@@ -11,7 +11,7 @@ ByteLimit=50
 [JLinkDriver]
 CStepIntDis=_ 0
 [DebugChecksum]
-Checksum=502572530
+Checksum=1770718570
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -72,6 +72,7 @@ Fmt6={W}0:VirtAddress	4	0
 Fmt7={W}0:adr	4	0
 Fmt8={W}0:temp	4	0
 Fmt9={W}0:temperature	3	3
+Fmt10={W}0:val	4	0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -90,9 +91,7 @@ Exclusions=
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\eeprom.c}.107.23" 0 0 1 "" 0 "" 0
-Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\eeprom.c}.372.3" 0 0 1 "" 0 "" 0
-Count=2
+Count=0
 [Aliases]
 Count=0
 SuppressDialog=0

@@ -93,6 +93,8 @@ void SetGenerator(bool *value);
 void HCalibrationProcess(channel_t Channal);
 void TCalibrationProcess(channel_t Channal);
 
+void SaveHumPoint(uint8_t channel,uint8_t cpoint);
+
 /* External variables --------------------------------------------------------*/
 extern CalibrationTypeDef CalibrationValues[MAXTCHANNEL];
 
